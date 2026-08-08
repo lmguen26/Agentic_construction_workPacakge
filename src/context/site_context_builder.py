@@ -33,6 +33,7 @@ def build_site_context(portfolio: dict[str, Any], building_id: str) -> dict[str,
     service_point_ids = {o.get("service_point_id") for o in occupancies if o.get("service_point_id")}
     service_points = [s for s in portfolio.get("service_points", []) if s.get("service_point_id") in service_point_ids]
     leases = _rows(portfolio, "leases", building_id)
+    strategic_context = _rows(portfolio, "strategic_context", building_id)
 
     active_occupancies = [o for o in occupancies if o.get("is_current") is True or o.get("occupancy_status") == "active"]
     active_leases = [l for l in leases if l.get("lease_status") in {"active", "current"}]
@@ -40,9 +41,7 @@ def build_site_context(portfolio: dict[str, Any], building_id: str) -> dict[str,
 
     strategy_rows = _rows(portfolio, "asset_strategy", building_id)
     strategy = strategy_rows[0] if strategy_rows else None
-    horizon = None
-    if strategy:
-        horizon = strategy.get("detention_horizon_years")
+    horizon = strategy.get("detention_horizon_years") if strategy else None
     if horizon is None:
         horizon = building.get("detention_horizon_years")
 
@@ -56,6 +55,9 @@ def build_site_context(portfolio: dict[str, Any], building_id: str) -> dict[str,
     warnings: list[str] = []
     if len(active_occupancies) > 1:
         warnings.append("MULTI_OCCUPANT_BUILDING: preserve service_point_id/occupancy_id for business and lease decisions.")
+    if strategic_context:
+        warnings.append("STRATEGIC_CONTEXT_AVAILABLE: qualitative structured context is available for Agent T/E; treat it as contextual evidence, not authoritative replacement for structured source facts.")
+
     for lease in leases:
         if lease.get("service_point_id") not in service_point_ids:
             exceptions.append({"code": "LEASE_SERVICE_POINT_MISMATCH", "lease_id": lease.get("lease_id")})
@@ -79,6 +81,7 @@ def build_site_context(portfolio: dict[str, Any], building_id: str) -> dict[str,
         "projects": _rows(portfolio, "projects", building_id),
         "leases": leases,
         "asset_strategy": strategy,
+        "strategic_context": strategic_context,
         "risks": _rows(portfolio, "risks", building_id),
         "energy_performance": _rows(portfolio, "energy_performance", building_id),
         "maintenance_history": _rows(portfolio, "maintenance_history", building_id),
@@ -91,6 +94,7 @@ def build_site_context(portfolio: dict[str, Any], building_id: str) -> dict[str,
             "earliest_active_lease_end_date": lease_end_dates[0] if lease_end_dates else None,
             "detention_horizon_years": horizon,
             "detention_band": detention_band(horizon),
+            "strategic_context_available": bool(strategic_context),
         },
         "data_quality": {
             "status": status,
