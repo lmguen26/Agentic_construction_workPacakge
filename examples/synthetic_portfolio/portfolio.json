@@ -1,0 +1,97 @@
+{
+  "note": "Entirely fictional Quebec credit-union-style portfolio for architecture testing. No real organization, address, building or project data.",
+  "buildings": [
+    {
+      "building_id": "BLDG-001",
+      "building_name": "Caisse Exemple - Centre-Riviere",
+      "address": "100 rue Exemple",
+      "municipality": "Levis",
+      "province": "QC",
+      "postal_code": "G0X 0X0",
+      "ownership_type": "owned",
+      "construction_year": 1988,
+      "gross_area_sqft": 18500,
+      "number_of_floors": 2,
+      "replacement_cost_per_sqft": 400,
+      "calculated_replacement_value": 7400000,
+      "flood_risk_rating": "low",
+      "portfolio_status": "active"
+    },
+    {
+      "building_id": "BLDG-002",
+      "building_name": "Caisse Exemple - Quartier-du-Lac",
+      "address": "250 avenue Exemple",
+      "municipality": "Quebec",
+      "province": "QC",
+      "postal_code": "G0X 0X0",
+      "ownership_type": "leased",
+      "construction_year": 2004,
+      "gross_area_sqft": 9200,
+      "number_of_floors": 1,
+      "replacement_cost_per_sqft": 400,
+      "calculated_replacement_value": 3680000,
+      "flood_risk_rating": "medium",
+      "portfolio_status": "active"
+    },
+    {
+      "building_id": "BLDG-003",
+      "building_name": "Caisse Exemple - Carrefour-Nord",
+      "address": "800 boulevard Exemple",
+      "municipality": "Trois-Rivieres",
+      "province": "QC",
+      "postal_code": "G0X 0X0",
+      "ownership_type": "mixed",
+      "construction_year": 1976,
+      "gross_area_sqft": 26000,
+      "number_of_floors": 3,
+      "replacement_cost_per_sqft": 400,
+      "calculated_replacement_value": 10400000,
+      "flood_risk_rating": "high",
+      "portfolio_status": "active"
+    }
+  ],
+  "service_points": [
+    {"service_point_id":"SP-001","service_point_name":"Centre-Riviere Services","business_entity_type":"retail_financial_services"},
+    {"service_point_id":"SP-002","service_point_name":"Quartier-du-Lac Services","business_entity_type":"retail_financial_services"},
+    {"service_point_id":"SP-003","service_point_name":"Carrefour-Nord Services","business_entity_type":"retail_financial_services"},
+    {"service_point_id":"SP-004","service_point_name":"Carrefour-Nord Administration","business_entity_type":"administrative_services"}
+  ],
+  "occupancies": [
+    {"occupancy_id":"OCC-001","building_id":"BLDG-001","service_point_id":"SP-001","occupancy_role":"owner_occupant","occupancy_start_date":"2010-01-01","occupancy_end_date":null,"area_occupied_sqft":18500,"is_primary_occupant":true},
+    {"occupancy_id":"OCC-002","building_id":"BLDG-002","service_point_id":"SP-002","occupancy_role":"tenant","occupancy_start_date":"2021-07-01","occupancy_end_date":null,"area_occupied_sqft":9200,"is_primary_occupant":true},
+    {"occupancy_id":"OCC-003","building_id":"BLDG-003","service_point_id":"SP-003","occupancy_role":"owner_occupant","occupancy_start_date":"2016-01-01","occupancy_end_date":null,"area_occupied_sqft":17000,"is_primary_occupant":true},
+    {"occupancy_id":"OCC-004","building_id":"BLDG-003","service_point_id":"SP-004","occupancy_role":"tenant","occupancy_start_date":"2023-01-01","occupancy_end_date":null,"area_occupied_sqft":9000,"is_primary_occupant":false}
+  ],
+  "components": [
+    {"component_id":"CMP-001","building_id":"BLDG-001","asset_type":"rooftop_hvac_unit","uniformat_code":"D3050","description":"Packaged rooftop HVAC unit","installation_year":2009,"condition_rating":"poor","useful_life_years":20,"expected_end_of_life_year":2029,"replacement_value":125000,"quantity":1,"unit_of_measure":"each","criticality":"high"},
+    {"component_id":"CMP-002","building_id":"BLDG-001","asset_type":"roof_membrane","uniformat_code":"B3010","description":"Low-slope roof membrane","installation_year":2011,"condition_rating":"fair","useful_life_years":25,"expected_end_of_life_year":2036,"replacement_value":280000,"quantity":12500,"unit_of_measure":"sqft","criticality":"high"},
+    {"component_id":"CMP-003","building_id":"BLDG-003","asset_type":"main_electrical_distribution","uniformat_code":"D5010","description":"Main electrical distribution equipment","installation_year":1998,"condition_rating":"poor","useful_life_years":30,"expected_end_of_life_year":2028,"replacement_value":220000,"quantity":1,"unit_of_measure":"system","criticality":"high"}
+  ],
+  "deficiencies": [
+    {"deficiency_id":"DEF-001","building_id":"BLDG-001","component_id":"CMP-001","title":"HVAC unit corrosion and declining performance","uniformat_code":"D3050","uniformat_level":3,"action_type":"replacement","unit_cost":125000,"unit_of_measure":"each","quantity":1,"source_total_cost":125000,"observation":"Unit shows corrosion and recurring performance issues.","proposed_corrective_action":"Replace rooftop unit.","intervention_horizon":"0-2 years","condition_rating":"poor","inspection_date":"2026-03-15"},
+    {"deficiency_id":"DEF-002","building_id":"BLDG-001","component_id":"CMP-002","title":"Localized roof membrane deterioration","uniformat_code":"B3010","uniformat_level":3,"action_type":"repair","unit_cost":18,"unit_of_measure":"sqft","quantity":1200,"source_total_cost":21600,"observation":"Localized deterioration around penetrations.","proposed_corrective_action":"Repair affected membrane areas and flashings.","intervention_horizon":"0-2 years","condition_rating":"fair","inspection_date":"2026-03-15"},
+    {"deficiency_id":"DEF-003","building_id":"BLDG-003","component_id":"CMP-003","title":"Aging electrical distribution","uniformat_code":"D5010","uniformat_level":3,"action_type":"replacement","unit_cost":220000,"unit_of_measure":"system","quantity":1,"source_total_cost":220000,"observation":"Equipment is nearing expected end of life and parts availability is declining.","proposed_corrective_action":"Plan phased replacement of main distribution equipment.","intervention_horizon":"2-5 years","condition_rating":"poor","inspection_date":"2026-04-10"}
+  ],
+  "accessibility": [
+    {"accessibility_assessment_id":"ACC-001","building_id":"BLDG-001","criterion_code":"ENTRANCE-STEPFREE","criterion_description":"Step-free primary entrance","compliant":true,"assessment_date":"2026-03-15","observation":"Primary entrance is accessible.","priority":"medium"},
+    {"accessibility_assessment_id":"ACC-002","building_id":"BLDG-001","criterion_code":"DOOR-AUTO","criterion_description":"Automatic operator at primary entrance","compliant":false,"assessment_date":"2026-03-15","observation":"Manual exterior door remains.","corrective_action_if_known":"Install automatic operator and controls.","priority":"high"},
+    {"accessibility_assessment_id":"ACC-003","building_id":"BLDG-003","criterion_code":"WASHROOM-ACCESSIBLE","criterion_description":"Accessible universal washroom","compliant":null,"assessment_date":"2026-04-10","observation":"Assessment incomplete.","priority":"medium"}
+  ],
+  "initiatives": [
+    {"initiative_id":"INIT-001","building_id":"BLDG-001","service_point_id":"SP-001","title":"Customer-area modernization","description":"Refresh customer-facing area and selected interior finishes.","initiative_type":"modernization","status":"identified","target_start_year":2028,"target_end_year":2028,"rough_order_cost":450000,"strategic_driver":"service_experience","dependencies":[]},
+    {"initiative_id":"INIT-002","building_id":"BLDG-003","service_point_id":"SP-003","title":"Space consolidation study","description":"Review potential consolidation of service and administrative functions.","initiative_type":"portfolio_strategy","status":"study","target_start_year":2027,"target_end_year":2027,"rough_order_cost":50000,"strategic_driver":"space_optimization","dependencies":[]}
+  ],
+  "projects": [
+    {"project_id":"PRJ-001","building_id":"BLDG-001","service_point_id":"SP-001","title":"Exterior signage renewal","project_status":"approved","planned_start_date":"2027-05-01","planned_end_date":"2027-07-01","approved_budget":75000,"forecast_cost":72000,"scope_summary":"Replace exterior identification signage and associated electrical feeds.","included_uniformat_codes":["G2040"],"related_initiative_id":null},
+    {"project_id":"PRJ-002","building_id":"BLDG-003","service_point_id":"SP-004","title":"Tenant office refresh","project_status":"active","planned_start_date":"2026-09-01","planned_end_date":"2026-11-30","approved_budget":160000,"forecast_cost":168000,"scope_summary":"Refresh tenant office finishes and lighting.","included_uniformat_codes":["C3010","D5020"],"related_initiative_id":null}
+  ],
+  "leases": [
+    {"lease_id":"LEASE-001","building_id":"BLDG-002","service_point_id":"SP-002","occupancy_id":"OCC-002","lease_start_date":"2021-07-01","lease_end_date":"2028-06-30","renewal_option_date":"2027-06-30","notice_date":"2027-09-30","lease_status":"active","leased_area_sqft":9200,"landlord_or_tenant_role":"tenant"},
+    {"lease_id":"LEASE-002","building_id":"BLDG-003","service_point_id":"SP-004","occupancy_id":"OCC-004","lease_start_date":"2023-01-01","lease_end_date":"2029-12-31","renewal_option_date":"2028-12-31","notice_date":"2029-03-31","lease_status":"active","leased_area_sqft":9000,"landlord_or_tenant_role":"landlord"}
+  ],
+  "asset_strategy_finance": [
+    {"strategy_record_id":"STRAT-001","building_id":"BLDG-001","retention_horizon":"greater_than_5_years","fci":0.11,"bfi":null,"capital_constraint":null,"ownership_strategy":"retain","amortization_percent":0.72},
+    {"strategy_record_id":"STRAT-002","building_id":"BLDG-002","retention_horizon":"2_to_5_years","fci":null,"bfi":null,"capital_constraint":null,"ownership_strategy":"lease_decision_required","amortization_percent":null},
+    {"strategy_record_id":"STRAT-003","building_id":"BLDG-003","retention_horizon":"2_to_5_years","fci":0.19,"bfi":null,"capital_constraint":null,"ownership_strategy":"study_consolidation","amortization_percent":0.84}
+  ]
+}
