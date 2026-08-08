@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/contracts/site-validation.schema.json",
+  "title": "Site Validation Artifact",
+  "type": "object",
+  "required": ["site_id", "pipeline_state", "sources", "blocking_issues"],
+  "properties": {
+    "site_id": {"type": "string", "minLength": 1},
+    "pipeline_state": {"enum": ["VALIDATED", "BLOCKED"]},
+    "validator_version": {"type": "string"},
+    "validated_at": {"type": "string", "format": "date-time"},
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_id", "required", "present", "valid"],
+        "properties": {
+          "source_id": {"type": "string"},
+          "required": {"type": "boolean"},
+          "present": {"type": "boolean"},
+          "valid": {"type": "boolean"},
+          "record_count": {"type": "integer", "minimum": 0},
+          "issues": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    },
+    "blocking_issues": {"type": "array", "items": {"type": "string"}},
+    "warnings": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
