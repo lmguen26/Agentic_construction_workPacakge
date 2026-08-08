@@ -1,0 +1,19 @@
+name: test-reference-pipeline
+
+on:
+  push:
+    branches: [main, v0.1-reference-pipeline]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip pytest
+      - run: pytest -q
+      - name: Run synthetic source validation
+        run: python src/validator/site_validator.py examples/synthetic_site/source_manifest.json --output /tmp/site_validation.json
