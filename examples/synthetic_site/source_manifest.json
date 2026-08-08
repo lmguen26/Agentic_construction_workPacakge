@@ -1,0 +1,23 @@
+{
+  "site_id": "SITE-DEMO-001",
+  "required_sources": [
+    "site_master",
+    "deficiencies",
+    "asset_context",
+    "lease_or_retention",
+    "cost_index",
+    "project_constraints",
+    "accessibility",
+    "energy_or_sustainability"
+  ],
+  "sources": {
+    "site_master": {"present": true, "record_count": 1},
+    "deficiencies": {"present": true, "record_count": 4},
+    "asset_context": {"present": true, "record_count": 12},
+    "lease_or_retention": {"present": true, "record_count": 1},
+    "cost_index": {"present": true, "record_count": 1},
+    "project_constraints": {"present": true, "record_count": 2},
+    "accessibility": {"present": true, "record_count": 3},
+    "energy_or_sustainability": {"present": true, "record_count": 2}
+  }
+}

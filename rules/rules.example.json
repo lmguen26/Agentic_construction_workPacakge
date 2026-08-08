@@ -1,0 +1,27 @@
+{
+  "ruleset_id": "synthetic-reference-v0.1",
+  "description": "Illustrative rules only. Replace with approved organizational rules.",
+  "retention_horizon": {
+    "short": {"max_years": 2, "strategy": "near-term intervention"},
+    "medium": {"min_years": 2, "max_years": 5, "strategy": "planned intervention"},
+    "long": {"min_years": 5, "strategy": "monitor or bundle opportunistically"}
+  },
+  "bundling": {
+    "same_system_bonus": 3,
+    "same_location_bonus": 2,
+    "same_intervention_window_bonus": 3,
+    "dependency_bonus": 4,
+    "minimum_bundle_score": 5
+  },
+  "costing": {
+    "base_year": 2026,
+    "annual_index_rate": 0.03,
+    "indirect_cost_rate": 0.15,
+    "contingency_rate": 0.10
+  },
+  "human_review": {
+    "required_for_all_recommendations": true,
+    "required_when_source_missing": true,
+    "required_when_assumption_count_exceeds": 2
+  }
+}

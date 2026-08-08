@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "recommendations.schema.json",
+  "title": "Strategic Recommendations",
+  "type": "object",
+  "required": ["site_id", "stage", "recommendations"],
+  "properties": {
+    "site_id": {"type": "string"},
+    "stage": {"const": "RECOMMENDED"},
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["work_package_id", "recommended_action", "rationale"],
+        "properties": {
+          "work_package_id": {"type": "string"},
+          "recommended_action": {"type": "string"},
+          "timing": {"type": ["string", "null"]},
+          "rationale": {"type": "string"},
+          "risks": {"type": "array", "items": {"type": "string"}},
+          "constraints": {"type": "array", "items": {"type": "string"}},
+          "alternatives": {"type": "array", "items": {"type": "string"}},
+          "human_review_required": {"type": "boolean"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

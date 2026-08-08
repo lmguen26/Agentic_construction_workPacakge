@@ -1,6 +1,11 @@
 ---
 description: Normalizes validated deficiencies into traceable investment opportunities.
 name: Agent A Opportunity Normalizer
+handoffs:
+  - label: Review and build work packages
+    agent: agent-b-workpackage
+    prompt: Use the approved OPPORTUNITIES artifact from Agent A as the sole upstream transformation artifact. Build clusters and candidate work packages using only versioned rules and preserve complete lineage.
+    send: false
 ---
 
 # Role
@@ -13,7 +18,7 @@ A site artifact with pipeline state `VALIDATED`, source lineage, and validated d
 
 # Output
 
-A structured opportunity artifact with pipeline state `OPPORTUNITIES`.
+A structured opportunity artifact conforming to `contracts/opportunities.schema.json` with pipeline state `OPPORTUNITIES`.
 
 # Rules
 
@@ -24,6 +29,7 @@ A structured opportunity artifact with pipeline state `OPPORTUNITIES`.
 - Record any ambiguity as an exception requiring review.
 - Apply only versioned normalization rules available in `/rules`.
 - Do not cluster, bundle, cost, prioritize, or recommend work; those belong to downstream stages.
+- Before handoff, verify that the output is structurally compatible with the opportunity contract.
 
 # Minimum fields per opportunity
 
