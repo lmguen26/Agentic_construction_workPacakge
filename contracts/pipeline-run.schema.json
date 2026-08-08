@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pipeline-run.schema.json",
+  "title": "Pipeline Run Manifest",
+  "type": "object",
+  "required": ["run_id", "building_ids", "source_snapshots", "stage_states", "rule_versions", "agent_versions", "approvals", "unresolved_exceptions"],
+  "properties": {
+    "run_id": {"type": "string"},
+    "created_at": {"type": "string"},
+    "building_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "service_point_ids": {"type": "array", "items": {"type": "string"}},
+    "source_snapshots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source_name", "status", "snapshot_id"],
+        "properties": {
+          "source_name": {"type": "string"},
+          "status": {"enum": ["PRESENT", "MISSING", "INVALID", "NOT_APPLICABLE"]},
+          "snapshot_id": {"type": "string"},
+          "record_count": {"type": "integer", "minimum": 0},
+          "effective_date": {"type": ["string", "null"]},
+          "schema_version": {"type": ["string", "null"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "association_exceptions": {"type": "array", "items": {"type": "object"}},
+    "data_quality_results": {"type": "array", "items": {"type": "object"}},
+    "rule_versions": {"type": "object", "additionalProperties": {"type": "string"}},
+    "agent_versions": {"type": "object", "additionalProperties": {"type": "string"}},
+    "stage_states": {
+      "type": "object",
+      "properties": {
+        "validation": {"enum": ["PENDING", "VALIDATED", "BLOCKED"]},
+        "opportunities": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
+        "clustering": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
+        "costing": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
+        "recommendation": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
+        "summary": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
+        "publishing": {"enum": ["PENDING", "READY", "PUBLISHED", "BLOCKED"]}
+      },
+      "additionalProperties": false
+    },
+    "artifact_paths": {"type": "object", "additionalProperties": {"type": "string"}},
+    "approvals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["stage", "status"],
+        "properties": {
+          "stage": {"type": "string"},
+          "status": {"enum": ["PENDING", "APPROVED", "REJECTED"]},
+          "approved_by": {"type": ["string", "null"]},
+          "approved_at": {"type": ["string", "null"]},
+          "comment": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "unresolved_exceptions": {"type": "array", "items": {"type": "object"}}
+  },
+  "additionalProperties": true
+}
