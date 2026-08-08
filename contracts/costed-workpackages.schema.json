@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "costed-workpackages.schema.json",
+  "title": "Costed Work Packages",
+  "type": "object",
+  "required": ["site_id", "stage", "work_packages"],
+  "properties": {
+    "site_id": {"type": "string"},
+    "stage": {"const": "COSTED"},
+    "cost_basis": {"type": "object"},
+    "work_packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["work_package_id", "direct_cost", "indirect_cost", "total_cost"],
+        "properties": {
+          "work_package_id": {"type": "string"},
+          "direct_cost": {"type": "number", "minimum": 0},
+          "indexation_factor": {"type": "number", "exclusiveMinimum": 0},
+          "indexed_direct_cost": {"type": "number", "minimum": 0},
+          "indirect_cost": {"type": "number", "minimum": 0},
+          "contingency": {"type": "number", "minimum": 0},
+          "total_cost": {"type": "number", "minimum": 0},
+          "calculation_trace": {"type": "array", "items": {"type": "string"}}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
