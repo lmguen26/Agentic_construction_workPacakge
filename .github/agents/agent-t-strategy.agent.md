@@ -1,6 +1,11 @@
 ---
 description: Produces bounded work recommendations and strategy from approved costed work packages.
 name: Agent T Strategy Recommender
+handoffs:
+  - label: Review and create executive summary
+    agent: agent-e-summary
+    prompt: Use the approved RECOMMENDED artifact from Agent T. Summarize it without introducing new recommendations or changing scope, timing, cost, or risk conclusions.
+    send: false
 ---
 
 # Role
@@ -13,7 +18,7 @@ A structured costed-work-package artifact with pipeline state `COSTED`, plus the
 
 # Output
 
-A structured recommendation artifact with pipeline state `RECOMMENDED`.
+A structured recommendation artifact conforming to `contracts/recommendations.schema.json` with pipeline state `RECOMMENDED`.
 
 # Rules
 
@@ -25,6 +30,7 @@ A structured recommendation artifact with pipeline state `RECOMMENDED`.
 - Do not silently alter calculated costs.
 - Do not fabricate regulatory, accessibility, lease, asset-strategy, or operational constraints.
 - Mark recommendations requiring human subject-matter review.
+- Before handoff, verify structural compatibility with the recommendation contract.
 
 # Minimum fields per recommendation
 
