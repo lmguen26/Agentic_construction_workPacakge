@@ -3,198 +3,306 @@
 This document defines a synthetic reference information model for a site-level building investment planning pipeline. It intentionally contains no employer-confidential data.
 
 ## Core principle
-
 Treat each source as a domain connected through explicit identifiers rather than as independent spreadsheets.
 
-Primary entities:
+Primary entities: `building_id`, `service_point_id`, `occupancy_id`, `lease_id`, `deficiency_id`, `component_id`, `initiative_id`, and `project_id`.
 
-- `building_id`: physical building or leased premises record.
-- `service_point_id`: business/service entity occupying all or part of a building.
-- `occupancy_id`: relationship between a service point and a building over time.
-- `lease_id`: lease tied to an occupancy/service point and building.
-- `deficiency_id`: observed condition issue tied to a building and optionally to a component.
-- `component_id`: maintainable building system/component.
-- `initiative_id`: known future initiative or opportunity.
-- `project_id`: approved or active project.
+## Canonical terminology
+- Use **detention horizon / horizon de détention** throughout the model.
+- Canonical field: `detention_horizon_years`.
+- Do not use `retention_horizon`.
 
 ## Source domains
 
 ### 1. Buildings
-Physical/site master data.
+One record per physical building/premises.
 
-Typical fields:
+Suggested fields:
 - building_id
 - building_name
+- building_status
+- ownership_type: owned / leased / mixed
+- building_type
 - address
 - municipality
 - province
 - postal_code
-- ownership_type: owned / leased / mixed
+- latitude / longitude
 - construction_year
+- major_renovation_year
 - gross_area_sqft
 - number_of_floors
+- number_of_basements
+- site_area_sqft
 - replacement_cost_per_sqft
 - calculated_replacement_value
+- replacement_value_date
 - flood_risk_rating
-- portfolio_status
-- latitude / longitude when available
+- overall_risk_rating
+- fci
+- bfi
+- condition_rating
+- detention_horizon_years
+- asset_strategy
+- strategic_status
 - source_system
 - source_record_id
 - effective_date
 
 Replacement value should be deterministic: `gross_area_sqft * replacement_cost_per_sqft` unless an authoritative replacement value is supplied.
 
-### 2. Service points and occupancies
-A service point is a business entity, not a building. A building may host zero, one, or many service points over time.
+### 2. Service points
+A service point is a business entity, not a building.
 
-Typical fields:
+Suggested fields:
 - service_point_id
 - service_point_name
-- business_entity_type
+- business_entity_id
+- business_entity_name
+- service_point_type
+- service_point_status
+- region
+- business_unit
+- operating_unit
+- opening_date
+- planned_closure_date
+- source_system
+- source_record_id
+- effective_date
+
+### 3. Occupancies
+Associative entity between a service point and a building over time. This is essential for multi-occupant buildings and relocations.
+
+Suggested fields:
 - occupancy_id
 - building_id
-- occupancy_role: owner_occupant / tenant / subtenant / shared
+- service_point_id
+- occupancy_type: owner_occupant / tenant / subtenant / shared
+- occupancy_status
+- occupied_area_sqft
+- floor_numbers
+- space_description
 - occupancy_start_date
 - occupancy_end_date
-- area_occupied_sqft
-- is_primary_occupant
+- is_primary_location
+- is_current
+- lease_id if applicable
+- source_system
+- source_record_id
 
-This relation is critical because lease decisions apply to occupancies/business entities while physical deficiencies apply to buildings.
-
-### 3. Deficiencies / FCA observations
+### 4. Deficiencies / FCA observations
 Primary work-generation source.
 
-Typical fields:
+Suggested fields:
 - deficiency_id
 - building_id
 - component_id if known
 - title
-- uniformat_code
-- uniformat_level
-- action_type: maintenance / repair / replacement / investigation
-- unit_cost
-- unit_of_measure
-- quantity
-- source_total_cost
 - observation
+- description
 - proposed_corrective_action
-- intervention_horizon
+- action_type: maintenance / repair / replacement / investigation / other
+- uniformat_level_1
+- uniformat_level_2
+- uniformat_level_3
+- uniformat_level_4
+- uniformat_code
+- uniformat_description
 - condition_rating: good / fair / poor / very_poor
+- priority_rating
+- risk_rating
+- intervention_horizon
+- recommended_intervention_year
+- quantity
+- unit_of_measure
+- unit_cost
+- source_total_cost
+- cost_date
+- cost_source
+- location
+- floor
+- room_or_zone
 - inspection_date
+- inspector_reference
+- photo_reference
+- document_reference
+- status
 - source_system
 - source_record_id
 
-### 4. Components / asset register
-Maintainable systems and assets.
+Keep `observation` separate from `proposed_corrective_action`: the inspector's proposed corrective action is evidence/input, not automatically the final investment decision.
 
-Typical fields:
+### 5. Components / asset register
+Suggested fields:
 - component_id
 - building_id
-- asset_type
+- component_name
+- component_type
+- system_name
 - uniformat_code
-- description
-- manufacturer/model when available
+- uniformat_level_3
+- uniformat_level_4
+- manufacturer
+- model
+- serial_number
+- location
+- floor
+- zone
 - installation_year
-- condition_rating
-- useful_life_years
+- installation_date
+- last_major_replacement_year
+- expected_useful_life_years
+- remaining_useful_life_years
 - expected_end_of_life_year
-- replacement_value
+- condition_rating
+- criticality_rating
 - quantity
 - unit_of_measure
-- criticality
+- replacement_value
+- replacement_value_date
+- maintenance_strategy
+- status
+- source_system
+- source_record_id
 
-### 5. Universal accessibility criteria
-Structured criteria by building, entrance, space, or service point when relevant.
+### 6. Universal accessibility
+Preferred scalable model: one record per assessed criterion, not one permanent column per criterion.
 
-Typical fields:
+Suggested fields:
 - accessibility_assessment_id
 - building_id
-- criterion_code
-- criterion_description
-- compliant: true / false / unknown
 - assessment_date
+- criterion_id
+- criterion_category
+- criterion_description
+- compliance_status: compliant / non_compliant / not_applicable / unknown
 - observation
-- corrective_action_if_known
+- recommended_action
 - priority
+- estimated_cost
+- evidence_reference
+- source_system
+- source_record_id
 
-Do not collapse `unknown` into `false`.
+Never collapse `unknown` into `non_compliant`.
 
-### 6. Future initiatives / identified opportunities
-Known future interventions that may overlap with deficiencies and should influence bundling/blending.
+### 7. Future initiatives
+Use `initiative` for known future business/real-estate interventions so it is not confused with Agent A's generated opportunities.
 
-Typical fields:
+Suggested fields:
 - initiative_id
 - building_id
 - service_point_id if business-driven
-- title
-- description
+- initiative_name
+- initiative_description
 - initiative_type
-- status
-- target_start_year
-- target_end_year
-- rough_order_cost
+- business_driver
 - strategic_driver
-- dependencies
+- planned_scope
+- planned_start_year
+- planned_completion_year
+- estimated_cost
+- cost_date
+- initiative_status
+- approval_status
+- dependency
+- constraint
+- source_system
+- source_record_id
 
-### 7. Projects
-Approved, planned, active, or recently completed projects used to prevent duplicate scope and expose dependencies.
-
-Typical fields:
+### 8. Projects
+Suggested fields:
 - project_id
 - building_id
 - service_point_id if relevant
-- title
+- project_name
+- project_description
+- project_type
 - project_status
+- project_phase
+- approved_scope
 - planned_start_date
-- planned_end_date
+- planned_completion_date
+- actual_start_date
+- actual_completion_date
 - approved_budget
 - forecast_cost
-- scope_summary
-- included_uniformat_codes
+- committed_cost
+- actual_cost
+- project_manager_reference
+- affected_uniformat_codes
+- affected_component_ids
 - related_initiative_id
+- source_system
+- source_record_id
 
-### 8. Leases
+Projects are checked before new work packages are proposed to reduce duplicate scope.
+
+### 9. Leases
 Lease data must preserve the distinction between physical building and occupying business entity.
 
-Typical fields:
+Suggested fields:
 - lease_id
 - building_id
 - service_point_id
 - occupancy_id
+- lease_type
+- lease_status
+- landlord_reference
+- tenant_reference
+- leased_area_sqft
 - lease_start_date
 - lease_end_date
 - renewal_option_date
+- renewal_option_end_date
 - notice_date
-- lease_status
-- leased_area_sqft
-- landlord_or_tenant_role
+- remaining_term_months
+- annual_base_rent
+- operating_cost
+- total_occupancy_cost
+- renewal_option
+- termination_option
+- planned_exit
+- planned_exit_date
+- source_system
+- source_record_id
 
-A lease-end trigger should therefore flow through `lease -> occupancy -> service point -> building`, not through building alone.
+A lease-end trigger flows through `lease -> occupancy -> service point -> building`, never through building alone.
 
-## Additional source domains already discussed or strongly recommended
+## Strategic/enrichment domains
 
-### 9. Portfolio risk / compliance
-Examples: flood, health and safety, regulatory exposure, asbestos probability, reputational/operational risk. Flood risk may remain on Building for V0.2, but a dedicated risk table scales better when multiple risk types exist.
+### 10. Asset strategy / finance
+Suggested fields:
+- building_id
+- detention_horizon_years
+- ownership_strategy
+- planned_disposition_date
+- planned_acquisition
+- planned_exit
+- strategic_importance
+- investment_posture
+- capital_constraint
+- strategy_effective_date
+- strategy_version
 
-### 10. Energy / carbon / building performance
-Examples: kWh/m2, utility consumption, emissions, carbon targets, BFI/energy performance indicators. These should later influence strategy and prioritization but should not be invented by work-package agents.
+This is the preferred location for deterministic strategy bands such as `<2 years`, `2-5 years`, and `>5 years`.
 
-### 11. Financial / asset strategy
-Examples: retention horizon, owner-vs-tenant strategy, amortization status, capital constraints, replacement value, FCI, budget envelope. This is essential for Agent T recommendations.
+### 11. Portfolio risk / compliance
+Suggested fields: `risk_id`, `building_id`, `risk_type`, `risk_category`, `probability`, `impact`, `risk_score`, `regulatory_requirement`, `compliance_status`, `required_action`, `target_date`, `source_system`.
 
-### 12. Maintenance / CMMS history
-Work orders, recurring failures, preventive maintenance, breakdown frequency, asset downtime, and maintenance cost history. This improves confidence that an apparent deficiency is isolated or systemic.
+### 12. Energy / carbon / building performance
+Examples: energy use intensity, utility consumption, emissions, carbon targets and building performance indicators.
 
-### 13. Space / occupancy / utilization
-Area by occupant, vacancy, utilization, capacity, and consolidation opportunities. Useful when a building investment is being compared against relocation or footprint reduction.
+### 13. Maintenance / CMMS history
+Work orders, recurring failures, preventive maintenance, breakdown frequency, asset downtime and maintenance cost history.
 
-### 14. BIM / spatial / GIS references
-Model identifiers, floor/space IDs, coordinates, geometry references, 360 imagery, and other location evidence. These are not required for V0.2 execution but are important lineage/context sources.
+### 14. Space / utilization
+Area by occupant, vacancy, utilization, capacity and consolidation opportunities.
+
+### 15. BIM / spatial / GIS references
+Model identifiers, floor/space IDs, coordinates, geometry references, 360 imagery and other spatial evidence.
 
 ## Association hierarchy
-
-Preferred joins:
-
 1. Exact authoritative ID.
 2. Approved crosswalk table.
 3. Composite deterministic key explicitly documented.
@@ -202,21 +310,12 @@ Preferred joins:
 
 Never silently join using only building name or street address.
 
+## Canonical Site Context
+Before Agent A runs, deterministic code should assemble one `site_context.json` for the selected building. It contains the building record and only the related service points, occupancies, deficiencies, components, accessibility assessments, initiatives, projects, leases, strategy and available enrichment domains.
+
+The Site Context Builder must preserve IDs and source lineage. It must not flatten multi-occupant relationships into one ambiguous building-level record.
+
 ## V0.2 pipeline run
+Each execution creates a `pipeline_run.json` containing run ID, building scope, source snapshots, data-quality results, association exceptions, rule versions, prompt/agent versions, stage states, artifact paths, human approvals, timestamps and unresolved exceptions.
 
-Each execution should create a `pipeline_run.json` containing:
-
-- run_id
-- site/building scope
-- source snapshots and versions
-- data-quality results
-- association exceptions
-- rule versions
-- prompt/agent versions
-- stage states
-- generated artifact paths
-- human approvals
-- timestamps
-- unresolved exceptions
-
-The run manifest becomes the auditable spine of the entire pipeline.
+The run manifest is the auditable spine of the pipeline.
