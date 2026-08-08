@@ -1,0 +1,41 @@
+{
+  "site_id": "SITE-DEMO-001",
+  "deficiencies": [
+    {
+      "deficiency_id": "DEF-001",
+      "system": "Roofing",
+      "location": "Main roof",
+      "description": "Localized membrane deterioration and recurring leakage near roof drain.",
+      "condition": "poor",
+      "intervention_horizon_years": 1,
+      "base_cost": 45000
+    },
+    {
+      "deficiency_id": "DEF-002",
+      "system": "Roofing",
+      "location": "Main roof",
+      "description": "Roof drain assembly is deteriorated and should be renewed during membrane work.",
+      "condition": "poor",
+      "intervention_horizon_years": 1,
+      "base_cost": 8000
+    },
+    {
+      "deficiency_id": "DEF-003",
+      "system": "HVAC",
+      "location": "Mechanical room",
+      "description": "Air handling unit has reached end of expected service life.",
+      "condition": "fair",
+      "intervention_horizon_years": 4,
+      "base_cost": 90000
+    },
+    {
+      "deficiency_id": "DEF-004",
+      "system": "Accessibility",
+      "location": "Main entrance",
+      "description": "Door operator does not provide current desired level of accessible operation.",
+      "condition": "functional",
+      "intervention_horizon_years": 2,
+      "base_cost": 12000
+    }
+  ]
+}
