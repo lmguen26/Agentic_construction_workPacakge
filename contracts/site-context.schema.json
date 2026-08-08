@@ -18,6 +18,7 @@
     "projects": {"type": "array", "items": {"type": "object"}},
     "leases": {"type": "array", "items": {"type": "object"}},
     "asset_strategy": {"type": ["object", "null"]},
+    "strategic_context": {"type": "array", "items": {"type": "object"}},
     "risks": {"type": "array", "items": {"type": "object"}},
     "energy_performance": {"type": "array", "items": {"type": "object"}},
     "maintenance_history": {"type": "array", "items": {"type": "object"}},
@@ -31,7 +32,8 @@
         "active_lease_count": {"type": "integer"},
         "earliest_active_lease_end_date": {"type": ["string", "null"]},
         "detention_horizon_years": {"type": ["number", "null"]},
-        "detention_band": {"enum": ["LT_2_YEARS", "2_TO_5_YEARS", "GT_5_YEARS", "UNKNOWN"]}
+        "detention_band": {"enum": ["LT_2_YEARS", "2_TO_5_YEARS", "GT_5_YEARS", "UNKNOWN"]},
+        "strategic_context_available": {"type": "boolean"}
       }
     },
     "data_quality": {
