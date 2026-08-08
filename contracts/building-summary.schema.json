@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "building-summary.schema.json",
+  "title": "Building Summary",
+  "type": "object",
+  "required": ["site_id", "stage", "executive_summary", "work_package_summary"],
+  "properties": {
+    "site_id": {"type": "string"},
+    "stage": {"const": "SUMMARIZED"},
+    "executive_summary": {"type": "string"},
+    "key_risks": {"type": "array", "items": {"type": "string"}},
+    "key_decisions": {"type": "array", "items": {"type": "string"}},
+    "work_package_summary": {"type": "array", "items": {"type": "object"}},
+    "data_quality_notes": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
