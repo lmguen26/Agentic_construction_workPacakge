@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from src.orchestration.pipeline_orchestrator import advance_run, prepare_run, publish_spa, run_reference_mode
 
-ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PORTFOLIO = ROOT / "examples" / "synthetic_portfolio" / "portfolio.json"
 
 
