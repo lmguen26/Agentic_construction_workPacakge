@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 
 from app.cockpit import open_cockpit
+from app.selection_panel import HierarchicalSelectionPanel
 from src.context.site_context_builder import build_site_context
 from src.quality.data_quality_gate import evaluate_site
 from src.spa.building_datasheet import render_building_datasheet
@@ -19,8 +20,8 @@ OUTPUT_DIR = ROOT / "data" / "outputs"
 class SiteSelectorApp(tk.Tk):
     def __init__(self, portfolio_path: Path = DEFAULT_PORTFOLIO):
         super().__init__()
-        self.title("Asset Investment Planning - Site Selector")
-        self.geometry("980x720")
+        self.title("Asset Investment Planning - Scope Selector")
+        self.geometry("1120x820")
         self.portfolio_path = portfolio_path
         self.portfolio = self._load_portfolio()
         self.buildings = self.portfolio.get("buildings", [])
@@ -38,41 +39,26 @@ class SiteSelectorApp(tk.Tk):
         wrapper = ttk.Frame(self, padding=16)
         wrapper.pack(fill="both", expand=True)
 
-        ttk.Label(wrapper, text="Select one or multiple buildings", font=("TkDefaultFont", 14, "bold")).pack(anchor="w")
+        ttk.Label(wrapper, text="Select analysis scope", font=("TkDefaultFont", 14, "bold")).pack(anchor="w")
         ttk.Label(
             wrapper,
-            text="Ctrl/Cmd-click or Shift-click to select multiple sites. Batch actions preserve independent per-building outputs.",
+            text="Use cumulative multi-select filters for Region → Branch → Site → Building. Higher-level selections expand to all matching buildings unless the building list is further refined.",
             foreground="#555555",
         ).pack(anchor="w", pady=(2, 8))
 
-        list_frame = ttk.Frame(wrapper)
-        list_frame.pack(fill="x")
-        self.building_list = tk.Listbox(list_frame, selectmode=tk.EXTENDED, height=8, exportselection=False)
-        self.building_list.pack(side="left", fill="both", expand=True)
-        scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=self.building_list.yview)
-        scrollbar.pack(side="right", fill="y")
-        self.building_list.configure(yscrollcommand=scrollbar.set)
-        for b in self.buildings:
-            self.building_list.insert("end", f"{b.get('building_id')} — {b.get('building_name', '')}")
-        self.building_list.bind("<<ListboxSelect>>", self._on_select)
-
-        select_row = ttk.Frame(wrapper)
-        select_row.pack(fill="x", pady=(6, 10))
-        ttk.Button(select_row, text="Select all", command=self._select_all).pack(side="left")
-        ttk.Button(select_row, text="Clear selection", command=self._clear_selection).pack(side="left", padx=(6, 0))
-        self.selection_label = ttk.Label(select_row, text="0 buildings selected")
-        self.selection_label.pack(side="right")
+        self.selector = HierarchicalSelectionPanel(wrapper, self.buildings, on_change=self._scope_changed)
+        self.selector.pack(fill="x", pady=(4, 10))
 
         button_row = ttk.Frame(wrapper)
         button_row.pack(fill="x", pady=(0, 12))
-        ttk.Button(button_row, text="Validate selected", command=self.validate_sites).pack(side="left", padx=(0, 8))
+        ttk.Button(button_row, text="Validate scope", command=self.validate_sites).pack(side="left", padx=(0, 8))
         ttk.Button(button_row, text="Build site context(s)", command=self.build_contexts).pack(side="left", padx=(0, 8))
         ttk.Button(button_row, text="Generate HTML datasheet(s)", command=self.generate_htmls).pack(side="left", padx=(0, 8))
         ttk.Button(button_row, text="Open Analysis Cockpit", command=self.open_analysis_cockpit).pack(side="right")
 
         ttk.Label(
             wrapper,
-            text="Use the Analysis Cockpit to choose analysis depth, effort and optional capabilities for the selected building scope.",
+            text="Batch scope controls throughput only. Each building keeps its own validation, manifest, site context, SPA, review metadata and revision history.",
             foreground="#555555",
         ).pack(anchor="w", pady=(0, 10))
 
@@ -81,25 +67,13 @@ class SiteSelectorApp(tk.Tk):
         self.summary.configure(state="disabled")
 
         ttk.Label(wrapper, textvariable=self.status_var).pack(anchor="w", pady=(8, 0))
+        self._scope_changed(self.selector.selected_buildings())
 
-        if self.buildings:
-            self.building_list.selection_set(0)
-            self._on_select()
+    def _selected_buildings(self) -> list[dict]:
+        return self.selector.selected_buildings()
 
     def _selected_building_ids(self) -> list[str]:
-        ids = []
-        for idx in self.building_list.curselection():
-            value = self.building_list.get(idx)
-            ids.append(value.split(" — ", 1)[0].strip())
-        return ids
-
-    def _select_all(self):
-        self.building_list.selection_set(0, "end")
-        self._on_select()
-
-    def _clear_selection(self):
-        self.building_list.selection_clear(0, "end")
-        self._on_select()
+        return [b["building_id"] for b in self._selected_buildings()]
 
     def _write_summary(self, payload):
         self.summary.configure(state="normal")
@@ -107,12 +81,29 @@ class SiteSelectorApp(tk.Tk):
         self.summary.insert("1.0", json.dumps(payload, indent=2, ensure_ascii=False))
         self.summary.configure(state="disabled")
 
-    def _on_select(self, _event=None):
-        bids = self._selected_building_ids()
-        self.selection_label.configure(text=f"{len(bids)} building{'s' if len(bids) != 1 else ''} selected")
-        selected = [b for b in self.buildings if b.get("building_id") in bids]
-        self._write_summary(selected if len(selected) != 1 else selected[0])
-        self.status_var.set(f"Selected {len(bids)} building(s)")
+    def _scope_changed(self, selected: list[dict]):
+        scope = self.selector.current_scope() if hasattr(self, "selector") else None
+        payload = {
+            "building_count": len(selected),
+            "scope_filters": {
+                "regions": list(scope.region_ids) if scope else [],
+                "branches": list(scope.branch_ids) if scope else [],
+                "sites": list(scope.site_ids) if scope else [],
+            },
+            "buildings": [
+                {
+                    "building_id": b.get("building_id"),
+                    "building_name": b.get("building_name"),
+                    "region_id": b.get("region_id"),
+                    "branch_id": b.get("branch_id"),
+                    "site_id": b.get("site_id"),
+                }
+                for b in selected
+            ],
+        }
+        if hasattr(self, "summary"):
+            self._write_summary(payload)
+            self.status_var.set(f"{len(selected)} building(s) in scope")
 
     def open_analysis_cockpit(self):
         open_cockpit(self, self.portfolio, self.buildings)
