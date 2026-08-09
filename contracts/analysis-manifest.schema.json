@@ -1,12 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "analysis-manifest.schema.json",
-  "title": "Site Analysis Manifest",
+  "title": "Building Analysis Manifest",
+  "description": "One manifest controls one physical building/premises analysis run. Multi-building cockpit selections create one manifest per building.",
   "type": "object",
   "required": ["analysis_id", "building_id", "profile_id", "effort", "modules", "requested_at"],
   "properties": {
     "analysis_id": {"type": "string"},
     "building_id": {"type": "string"},
+    "site_id": {"type": ["string", "null"], "description": "Optional parent site identifier."},
+    "batch_id": {"type": ["string", "null"], "description": "Optional batch identifier linking multiple independent building manifests created from one selection."},
     "profile_id": {"enum": ["LEVEL_0_VALIDATION", "LEVEL_1_WORK_PACKAGES", "LEVEL_2_STRATEGIC", "LEVEL_3_ADVANCED", "CUSTOM"]},
     "effort": {"enum": ["RAPID", "STANDARD", "THOROUGH"]},
     "requested_at": {"type": "string"},
