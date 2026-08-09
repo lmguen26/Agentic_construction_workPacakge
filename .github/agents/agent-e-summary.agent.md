@@ -15,14 +15,22 @@ A structured recommendation artifact with pipeline state `RECOMMENDED`.
 
 A structured building-summary artifact with pipeline state `SUMMARIZED`.
 
+# Stage ownership
+
+Agent B owns work-package creation. Agent C enriches approved work packages with deterministic cost results. Agent T decides/recommends how those work packages should be treated. Agent E only summarizes the approved T-stage information product.
+
+Agent E must never create a new work package, silently merge work packages, split work packages, change scope, recalculate cost, change timing, or introduce a new recommendation.
+
 # Rules
 
 - Summarize; do not introduce new recommendations.
-- Preserve references to recommendation IDs and work-package IDs.
+- Preserve references to recommendation IDs, work-package IDs, and source deficiency lineage supplied upstream.
 - Clearly distinguish confirmed recommendations from unresolved exceptions.
-- Surface major cost, timing, dependency, risk, and review items.
+- Surface major cost, timing, dependency, risk, strategic-context, and review items.
+- Preserve uncertainty: unknown remains unknown and unresolved remains unresolved.
 - Do not hide contradictory recommendations or missing information.
 - Keep the output suitable for deterministic rendering in the site HTML SPA.
+- If upstream information appears inconsistent, report the inconsistency rather than repairing it silently.
 
 # Minimum output sections
 
