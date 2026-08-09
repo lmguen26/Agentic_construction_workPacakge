@@ -23,14 +23,19 @@ def _cards(items: list[dict[str, Any]], title_key: str, subtitle_keys: list[str]
     return "".join(out)
 
 
+def _recommended_work_packages(context: dict[str, Any]) -> list[dict[str, Any]]:
+    return context.get("recommended_work_packages") or context.get("work_packages") or []
+
+
 def _work_package_review_cards(context: dict[str, Any]) -> str:
-    candidates = context.get("recommended_work_packages") or context.get("work_packages") or []
+    candidates = _recommended_work_packages(context)
     if not candidates:
         return '<div class="empty">No recommended work packages available for review.</div>'
     out = []
     for wp in candidates:
-        wp_id = _esc(wp.get("work_package_id") or wp.get("id") or "UNKNOWN-WP")
-        title = _esc(wp.get("title") or wp.get("recommendation") or wp_id)
+        wp_id_raw = str(wp.get("work_package_id") or wp.get("id") or "UNKNOWN-WP")
+        wp_id = _esc(wp_id_raw)
+        title = _esc(wp.get("title") or wp.get("recommendation") or wp_id_raw)
         out.append(f'''
         <article class="review-card" data-work-package-id="{wp_id}">
           <div class="review-card-head"><div><strong>{title}</strong><div class="small">{wp_id}</div></div><span class="status review-state">NOT_REVIEWED</span></div>
@@ -52,6 +57,41 @@ def _work_package_review_cards(context: dict[str, Any]) -> str:
     return "".join(out)
 
 
+def _initial_review_metadata(context: dict[str, Any]) -> dict[str, Any]:
+    building_id = context.get("building_id", "UNKNOWN")
+    work_packages = _recommended_work_packages(context)
+    return {
+        "review_schema_version": "0.3",
+        "review_id": None,
+        "building_id": building_id,
+        "pipeline_run_id": context.get("pipeline_run_id"),
+        "artifact_version": context.get("artifact_version") or context.get("context_version"),
+        "reviewer_id": None,
+        "reviewer_name": None,
+        "reviewer_role": None,
+        "review_started_at": None,
+        "review_completed_at": None,
+        "review_status": "NOT_STARTED",
+        "completion_confirmed": False,
+        "overall_comment": None,
+        "work_package_reviews": [
+            {
+                "work_package_id": wp.get("work_package_id") or wp.get("id"),
+                "decision": "NOT_REVIEWED",
+                "reviewed_at": None,
+                "reviewer_comment": None,
+                "scope_change_requested": False,
+                "cost_review_required": False,
+                "timing_review_required": False,
+                "risk_review_required": False,
+                "completion_confirmed": False,
+            }
+            for wp in work_packages
+        ],
+        "audit_events": [],
+    }
+
+
 def render_building_datasheet(context: dict[str, Any], output_path: Path) -> Path:
     b = context.get("building", {})
     derived = context.get("derived_facts", {})
@@ -59,6 +99,7 @@ def render_building_datasheet(context: dict[str, Any], output_path: Path) -> Pat
     building_id = context.get("building_id", "UNKNOWN")
 
     payload = json.dumps(context, ensure_ascii=False).replace("</", "<\\/")
+    review_payload = json.dumps(_initial_review_metadata(context), ensure_ascii=False).replace("</", "<\\/")
     page = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -79,13 +120,13 @@ section {{ margin-top: 18px; padding: 18px; }} section h2 {{ margin-top: 0; font
 nav button, .action {{ border: 0; background: #e5e7eb; padding: 8px 10px; margin: 6px 6px 0 0; border-radius: 7px; cursor: pointer; }}
 .action.primary {{ background: #111827; color: white; }}
 pre {{ white-space: pre-wrap; word-break: break-word; background: #111827; color: #f9fafb; padding: 14px; border-radius: 8px; max-height: 600px; overflow: auto; }}
-.hidden {{ display: none; }}
-.review-panel {{ border: 2px solid #c7d2fe; }}
+.hidden {{ display: none; }} .review-panel {{ border: 2px solid #c7d2fe; }}
 .review-grid {{ display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:10px; margin:12px 0; }}
 label {{ display:block; font-size:13px; font-weight:600; margin-top:8px; }} input[type=text], select, textarea {{ width:100%; box-sizing:border-box; margin-top:5px; padding:8px; border:1px solid #d1d5db; border-radius:6px; font:inherit; }}
 .review-card-head {{ display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }}
 .audit {{ max-height:220px; overflow:auto; border:1px solid #e5e7eb; border-radius:8px; padding:10px; background:#f9fafb; }}
 .audit div {{ padding:5px 0; border-bottom:1px solid #eee; font-size:12px; }}
+.save-note {{ margin-top:8px; padding:9px 10px; border-radius:7px; background:#f0fdf4; font-size:12px; }}
 </style>
 </head>
 <body>
@@ -124,36 +165,141 @@ label {{ display:block; font-size:13px; font-weight:600; margin-top:8px; }} inpu
       <label>Review status<select id="review-status"><option>NOT_STARTED</option><option>IN_PROGRESS</option><option>COMPLETED</option><option>RETURNED_FOR_REVISION</option></select></label>
     </div>
     <div class="small">Review started: <span id="started-at">—</span> · Completed: <span id="completed-at">—</span></div>
+    <div class="save-note">Review metadata is embedded in this SPA as JSON and autosaved locally in the browser for this building/artifact.</div>
     <h3>Recommended work packages</h3>
     {_work_package_review_cards(context)}
     <label>Overall review comment<textarea id="overall-comment" rows="4"></textarea></label>
     <label><input id="completion-confirmed" type="checkbox" /> I confirm that the review is complete and that all work-package decisions have been reviewed.</label>
-    <div><button class="action" onclick="startReview()">Start / resume review</button><button class="action primary" onclick="completeReview()">Complete review</button><button class="action" onclick="downloadReview()">Export review JSON</button></div>
+    <div><button class="action" onclick="startReview()">Start / resume review</button><button class="action primary" onclick="completeReview()">Complete review</button><button class="action" onclick="downloadReviewedHtml()">Export reviewed SPA</button><button class="action" onclick="downloadReviewJson()">Export review JSON</button></div>
     <h3>Audit trail</h3><div id="audit" class="audit"></div>
   </section>
 
-  <section data-group="raw"><h2>Canonical site context</h2><pre id="raw"></pre></section>
+  <section data-group="raw"><h2>Canonical site context</h2><pre id="raw"></pre><h2>Embedded review metadata</h2><pre id="review-raw"></pre></section>
 </main>
 <script type="application/json" id="site-context">{payload}</script>
+<script type="application/json" id="review-metadata">{review_payload}</script>
 <script>
 const ctx = JSON.parse(document.getElementById('site-context').textContent);
+const reviewNode = document.getElementById('review-metadata');
+let review = JSON.parse(reviewNode.textContent);
+const storageKey = `building-review:${{ctx.building_id}}:${{review.artifact_version || 'NA'}}`;
+
 document.getElementById('raw').textContent = JSON.stringify(ctx, null, 2);
-let auditEvents = [];
-let reviewStartedAt = null;
-let reviewCompletedAt = null;
+
 function nowIso() {{ return new Date().toISOString(); }}
 function actor() {{ return document.getElementById('reviewer-id').value.trim() || 'UNIDENTIFIED'; }}
-function logEvent(type, details={{}}) {{ const e={{event_type:type,timestamp:nowIso(),actor_id:actor(),details}}; auditEvents.push(e); renderAudit(); }}
-function renderAudit() {{ document.getElementById('audit').innerHTML = auditEvents.slice().reverse().map(e=>`<div><strong>${{e.event_type}}</strong> · ${{e.timestamp}} · ${{e.actor_id}}<br>${{JSON.stringify(e.details)}}</div>`).join('') || '<div class="small">No events yet.</div>'; }}
-function startReview() {{ if (!document.getElementById('reviewer-id').value.trim()) {{ alert('Reviewer ID is required.'); return; }} if (!reviewStartedAt) reviewStartedAt=nowIso(); document.getElementById('started-at').textContent=reviewStartedAt; document.getElementById('review-status').value='IN_PROGRESS'; logEvent('REVIEW_STARTED_OR_RESUMED'); }}
-function collectWpReviews() {{ return [...document.querySelectorAll('.review-card')].map(card=>{{ const decision=card.querySelector('.wp-decision').value; const complete=card.querySelector('.wp-complete').checked; return {{work_package_id:card.dataset.workPackageId,decision,reviewed_at:nowIso(),reviewer_comment:card.querySelector('.wp-comment').value||null,scope_change_requested:card.querySelector('.scope-review').checked,cost_review_required:card.querySelector('.cost-review').checked,timing_review_required:card.querySelector('.timing-review').checked,risk_review_required:card.querySelector('.risk-review').checked,completion_confirmed:complete}}; }}); }}
-function buildReview() {{ return {{review_id:`REV-${{ctx.building_id}}-${{Date.now()}}`,building_id:ctx.building_id,pipeline_run_id:ctx.pipeline_run_id||null,artifact_version:ctx.artifact_version||ctx.context_version||null,reviewer_id:document.getElementById('reviewer-id').value.trim(),reviewer_name:document.getElementById('reviewer-name').value||null,reviewer_role:document.getElementById('reviewer-role').value||null,review_started_at:reviewStartedAt||nowIso(),review_completed_at:reviewCompletedAt,review_status:document.getElementById('review-status').value,completion_confirmed:document.getElementById('completion-confirmed').checked,overall_comment:document.getElementById('overall-comment').value||null,work_package_reviews:collectWpReviews(),audit_events:auditEvents}}; }}
-function completeReview() {{ if (!document.getElementById('reviewer-id').value.trim()) {{ alert('Reviewer ID is required.'); return; }} const reviews=collectWpReviews(); if (!reviews.every(r=>r.decision!=='NOT_REVIEWED' && r.completion_confirmed)) {{ alert('Each work package must have a decision and completion confirmation.'); return; }} if (!document.getElementById('completion-confirmed').checked) {{ alert('Overall completion confirmation is required.'); return; }} if (!reviewStartedAt) reviewStartedAt=nowIso(); reviewCompletedAt=nowIso(); document.getElementById('started-at').textContent=reviewStartedAt; document.getElementById('completed-at').textContent=reviewCompletedAt; document.getElementById('review-status').value='COMPLETED'; logEvent('REVIEW_COMPLETED',{{work_package_count:reviews.length}}); }}
-function downloadReview() {{ const review=buildReview(); if (!review.reviewer_id) {{ alert('Reviewer ID is required before export.'); return; }} logEvent('REVIEW_EXPORTED'); const blob=new Blob([JSON.stringify(buildReview(),null,2)],{{type:'application/json'}}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`${{ctx.building_id}}-review.json`; a.click(); URL.revokeObjectURL(a.href); }}
-document.querySelectorAll('.wp-decision,.wp-comment,.scope-review,.cost-review,.timing-review,.risk-review,.wp-complete').forEach(el=>el.addEventListener('change',ev=>{{ const card=ev.target.closest('.review-card'); card.querySelector('.review-state').textContent=card.querySelector('.wp-decision').value; card.querySelector('.wp-reviewed-at').textContent='Last changed: '+nowIso(); logEvent('WORK_PACKAGE_REVIEW_CHANGED',{{work_package_id:card.dataset.workPackageId,decision:card.querySelector('.wp-decision').value}}); }}));
+function syncEmbeddedReview() {{
+  reviewNode.textContent = JSON.stringify(review);
+  document.getElementById('review-raw').textContent = JSON.stringify(review, null, 2);
+  try {{ localStorage.setItem(storageKey, JSON.stringify(review)); }} catch (e) {{}}
+}}
+function logEvent(type, details={{}}) {{
+  review.audit_events.push({{event_type:type,timestamp:nowIso(),actor_id:actor(),details}});
+  syncEmbeddedReview();
+  renderAudit();
+}}
+function renderAudit() {{
+  document.getElementById('audit').innerHTML = review.audit_events.slice().reverse().map(e=>`<div><strong>${{e.event_type}}</strong> · ${{e.timestamp}} · ${{e.actor_id}}<br>${{JSON.stringify(e.details)}}</div>`).join('') || '<div class="small">No events yet.</div>';
+}}
+function collectWpReviews() {{
+  return [...document.querySelectorAll('.review-card')].map(card=>({{
+    work_package_id:card.dataset.workPackageId,
+    decision:card.querySelector('.wp-decision').value,
+    reviewed_at:card.querySelector('.wp-reviewed-at').dataset.iso || null,
+    reviewer_comment:card.querySelector('.wp-comment').value || null,
+    scope_change_requested:card.querySelector('.scope-review').checked,
+    cost_review_required:card.querySelector('.cost-review').checked,
+    timing_review_required:card.querySelector('.timing-review').checked,
+    risk_review_required:card.querySelector('.risk-review').checked,
+    completion_confirmed:card.querySelector('.wp-complete').checked
+  }}));
+}}
+function captureForm() {{
+  review.reviewer_id = document.getElementById('reviewer-id').value.trim() || null;
+  review.reviewer_name = document.getElementById('reviewer-name').value || null;
+  review.reviewer_role = document.getElementById('reviewer-role').value || null;
+  review.review_status = document.getElementById('review-status').value;
+  review.completion_confirmed = document.getElementById('completion-confirmed').checked;
+  review.overall_comment = document.getElementById('overall-comment').value || null;
+  review.work_package_reviews = collectWpReviews();
+  syncEmbeddedReview();
+}}
+function applyReviewToForm() {{
+  document.getElementById('reviewer-id').value = review.reviewer_id || '';
+  document.getElementById('reviewer-name').value = review.reviewer_name || '';
+  document.getElementById('reviewer-role').value = review.reviewer_role || '';
+  document.getElementById('review-status').value = review.review_status || 'NOT_STARTED';
+  document.getElementById('completion-confirmed').checked = !!review.completion_confirmed;
+  document.getElementById('overall-comment').value = review.overall_comment || '';
+  document.getElementById('started-at').textContent = review.review_started_at || '—';
+  document.getElementById('completed-at').textContent = review.review_completed_at || '—';
+  const byId = Object.fromEntries((review.work_package_reviews || []).map(r=>[r.work_package_id,r]));
+  document.querySelectorAll('.review-card').forEach(card=>{{
+    const r = byId[card.dataset.workPackageId]; if (!r) return;
+    card.querySelector('.wp-decision').value = r.decision || 'NOT_REVIEWED';
+    card.querySelector('.review-state').textContent = r.decision || 'NOT_REVIEWED';
+    card.querySelector('.wp-comment').value = r.reviewer_comment || '';
+    card.querySelector('.scope-review').checked = !!r.scope_change_requested;
+    card.querySelector('.cost-review').checked = !!r.cost_review_required;
+    card.querySelector('.timing-review').checked = !!r.timing_review_required;
+    card.querySelector('.risk-review').checked = !!r.risk_review_required;
+    card.querySelector('.wp-complete').checked = !!r.completion_confirmed;
+    card.querySelector('.wp-reviewed-at').dataset.iso = r.reviewed_at || '';
+    card.querySelector('.wp-reviewed-at').textContent = r.reviewed_at ? 'Last changed: '+r.reviewed_at : 'Not yet reviewed';
+  }});
+  syncEmbeddedReview(); renderAudit();
+}}
+function startReview() {{
+  if (!document.getElementById('reviewer-id').value.trim()) {{ alert('Reviewer ID is required.'); return; }}
+  captureForm();
+  if (!review.review_id) review.review_id = `REV-${{ctx.building_id}}-${{Date.now()}}`;
+  if (!review.review_started_at) review.review_started_at = nowIso();
+  review.review_status = 'IN_PROGRESS';
+  document.getElementById('review-status').value = 'IN_PROGRESS';
+  document.getElementById('started-at').textContent = review.review_started_at;
+  logEvent('REVIEW_STARTED_OR_RESUMED');
+}}
+function completeReview() {{
+  captureForm();
+  if (!review.reviewer_id) {{ alert('Reviewer ID is required.'); return; }}
+  if (!review.work_package_reviews.every(r=>r.decision!=='NOT_REVIEWED' && r.completion_confirmed)) {{ alert('Each work package must have a decision and completion confirmation.'); return; }}
+  if (!review.completion_confirmed) {{ alert('Overall completion confirmation is required.'); return; }}
+  if (!review.review_id) review.review_id = `REV-${{ctx.building_id}}-${{Date.now()}}`;
+  if (!review.review_started_at) review.review_started_at = nowIso();
+  review.review_completed_at = nowIso();
+  review.review_status = 'COMPLETED';
+  document.getElementById('review-status').value = 'COMPLETED';
+  document.getElementById('started-at').textContent = review.review_started_at;
+  document.getElementById('completed-at').textContent = review.review_completed_at;
+  logEvent('REVIEW_COMPLETED',{{work_package_count:review.work_package_reviews.length}});
+}}
+function downloadReviewJson() {{
+  captureForm(); if (!review.reviewer_id) {{ alert('Reviewer ID is required before export.'); return; }}
+  logEvent('REVIEW_JSON_EXPORTED');
+  const blob=new Blob([JSON.stringify(review,null,2)],{{type:'application/json'}}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=`${{ctx.building_id}}-review.json`; a.click(); URL.revokeObjectURL(a.href);
+}}
+function downloadReviewedHtml() {{
+  captureForm(); if (!review.reviewer_id) {{ alert('Reviewer ID is required before export.'); return; }}
+  logEvent('REVIEWED_SPA_EXPORTED');
+  syncEmbeddedReview();
+  const clone = document.documentElement.cloneNode(true);
+  clone.querySelector('#review-metadata').textContent = JSON.stringify(review).replace(/<\\//g,'<\\\\/');
+  const blob = new Blob(['<!doctype html>\n'+clone.outerHTML],{{type:'text/html'}}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=`${{ctx.building_id}}-reviewed.html`; a.click(); URL.revokeObjectURL(a.href);
+}}
 function filterSections(group) {{ document.querySelectorAll('section').forEach(s => s.classList.toggle('hidden', s.dataset.group !== group)); }}
 function showAll() {{ document.querySelectorAll('section').forEach(s => s.classList.remove('hidden')); }}
-renderAudit();
+
+document.querySelectorAll('#reviewer-id,#reviewer-name,#reviewer-role,#review-status,#overall-comment,#completion-confirmed').forEach(el=>el.addEventListener('change',captureForm));
+document.querySelectorAll('.wp-decision,.wp-comment,.scope-review,.cost-review,.timing-review,.risk-review,.wp-complete').forEach(el=>el.addEventListener('change',ev=>{{
+  const card=ev.target.closest('.review-card'); const ts=nowIso(); card.querySelector('.review-state').textContent=card.querySelector('.wp-decision').value;
+  card.querySelector('.wp-reviewed-at').dataset.iso=ts; card.querySelector('.wp-reviewed-at').textContent='Last changed: '+ts;
+  captureForm(); logEvent('WORK_PACKAGE_REVIEW_CHANGED',{{work_package_id:card.dataset.workPackageId,decision:card.querySelector('.wp-decision').value}});
+}}));
+
+try {{ const saved=localStorage.getItem(storageKey); if(saved) review=JSON.parse(saved); }} catch(e) {{}}
+applyReviewToForm();
 </script>
 </body>
 </html>"""
