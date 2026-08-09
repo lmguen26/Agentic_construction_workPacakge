@@ -1,0 +1,26 @@
+{
+  "profile_id": "LEVEL_3_ADVANCED",
+  "label": "Advanced Investment Analysis",
+  "description": "Run strategic site analysis plus advanced cost uncertainty, amortization, alternative work-package configurations and timing alternatives for complex or high-value sites.",
+  "default_effort": "THOROUGH",
+  "modules": {
+    "data_quality": true,
+    "site_context": true,
+    "opportunity_normalization": true,
+    "bundling_blending": true,
+    "costing": true,
+    "recommendation": true,
+    "executive_summary": true,
+    "accessibility": true,
+    "component_lifecycle": true,
+    "lease_strategy": true,
+    "existing_projects_initiatives": true,
+    "strategic_context": true,
+    "risk_compliance": true,
+    "fci_replacement_value": true,
+    "cost_sensitivity": true,
+    "amortization": true,
+    "alternative_work_packages": true,
+    "timing_alternatives": true
+  }
+}
