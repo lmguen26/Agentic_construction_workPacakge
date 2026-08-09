@@ -6,6 +6,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
 
+from app.cockpit import open_cockpit
 from src.context.site_context_builder import build_site_context
 from src.quality.data_quality_gate import evaluate_site
 from src.spa.building_datasheet import render_building_datasheet
@@ -19,7 +20,7 @@ class SiteSelectorApp(tk.Tk):
     def __init__(self, portfolio_path: Path = DEFAULT_PORTFOLIO):
         super().__init__()
         self.title("Asset Investment Planning - Site Selector")
-        self.geometry("900x620")
+        self.geometry("920x650")
         self.portfolio_path = portfolio_path
         self.portfolio = self._load_portfolio()
         self.buildings = self.portfolio.get("buildings", [])
@@ -49,7 +50,14 @@ class SiteSelectorApp(tk.Tk):
         button_row.pack(fill="x", pady=(0, 12))
         ttk.Button(button_row, text="Validate site", command=self.validate_site).pack(side="left", padx=(0, 8))
         ttk.Button(button_row, text="Build site context", command=self.build_context).pack(side="left", padx=(0, 8))
-        ttk.Button(button_row, text="Generate HTML datasheet", command=self.generate_html).pack(side="left")
+        ttk.Button(button_row, text="Generate HTML datasheet", command=self.generate_html).pack(side="left", padx=(0, 8))
+        ttk.Button(button_row, text="Open Analysis Cockpit", command=self.open_analysis_cockpit).pack(side="right")
+
+        ttk.Label(
+            wrapper,
+            text="Use the Analysis Cockpit to choose analysis depth, effort and optional capabilities before creating an analysis manifest.",
+            foreground="#555555",
+        ).pack(anchor="w", pady=(0, 10))
 
         self.summary = tk.Text(wrapper, height=24, wrap="word")
         self.summary.pack(fill="both", expand=True)
@@ -76,6 +84,9 @@ class SiteSelectorApp(tk.Tk):
         building = next((b for b in self.buildings if b.get("building_id") == bid), {})
         self._write_summary(building)
         self.status_var.set(f"Selected {bid}")
+
+    def open_analysis_cockpit(self):
+        open_cockpit(self, self.portfolio, self.buildings)
 
     def validate_site(self):
         bid = self._current_building_id()
