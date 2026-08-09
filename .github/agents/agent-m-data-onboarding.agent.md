@@ -18,6 +18,7 @@ Before beginning, read and use:
 - `docs/source-integration-architecture.md`
 - `docs/information-model-v0.2.md`
 - `docs/selection-hierarchy.md`
+- `docs/identity-and-occupancy-model.md`
 - `contracts/site-context.schema.json`
 - mapping examples under `mappings/`
 
@@ -46,23 +47,24 @@ For each canonical domain:
 
 Prefer this order unless the user explicitly directs otherwise:
 
-1. buildings
+1. buildings / physical premises
 2. region / branch / site hierarchy
-3. service points
-4. occupancies
-5. leases
-6. deficiencies
-7. components
-8. accessibility
-9. projects
-10. initiatives
-11. asset strategy / finance / detention horizon
-12. strategic context
-13. risk / compliance
-14. energy / carbon
-15. maintenance history
-16. space / utilization
-17. BIM / GIS / spatial references
+3. transits / service points
+4. temporal occupancies
+5. tenure / owned-leased portions
+6. leases
+7. deficiencies
+8. components
+9. accessibility
+10. projects
+11. initiatives
+12. asset strategy / finance / detention horizon
+13. strategic context
+14. risk / compliance
+15. energy / carbon
+16. maintenance history
+17. space / utilization
+18. BIM / GIS / spatial references
 
 # Critical identity rules
 
@@ -80,12 +82,70 @@ Preserve the distinction between:
 - `region_id`
 - `branch_id`
 - `site_id`
-- `building_id`
-- `service_point_id`
+- `building_id` / physical-premises identifier
+- `transit_id` / `service_point_id`
 - `occupancy_id`
 - `lease_id`
 
-A service point is not a building. A lease belongs to an occupancy/business relationship, not automatically to the entire physical building.
+## Transit numbers are temporal business identities
+
+A transit/service-point number is **not** a stable physical building identifier and is **not** a site identifier.
+
+Transits can move over time from one building/site to another. A transit may occupy owned premises during one period and leased premises during another.
+
+Never map:
+
+```text
+transit_id -> building_id
+transit_id -> site_id
+```
+
+as an identity equivalence.
+
+Instead, locate the authoritative temporal occupancy relationship connecting the transit to the physical premises/building and site.
+
+Agent M must explicitly determine:
+
+- where current transit-to-building occupancy is stored;
+- whether historical occupancy is available;
+- effective start/end dates;
+- whether multiple simultaneous occupancy relationships are valid;
+- which source is authoritative when sources disagree.
+
+## Sites can contain multiple transits and mixed tenure
+
+A site may contain:
+
+- multiple distinct transits/service points;
+- multiple physical premises/building portions;
+- an owned portion and a leased portion simultaneously.
+
+Therefore do not assume:
+
+```text
+one site = one transit
+one site = one building
+one site = one tenure type
+```
+
+If real data requires a `premises` or `building_portion` entity to represent mixed owned/leased sections, document the need and propose the canonical extension rather than collapsing the information into a misleading site-level field.
+
+## Occupancy is the bridge
+
+Treat occupancy as a temporal relationship, conceptually:
+
+```text
+transit/service point
+ + physical premises/building
+ + site
+ + effective_from/effective_to
+ + tenure context
+ = occupancy
+```
+
+A lease belongs to the applicable leased occupancy/premises relationship, not automatically to the entire site or physical building.
+
+Read `docs/identity-and-occupancy-model.md` before approving the identity backbone.
 
 # Real-data safety
 
@@ -115,15 +175,27 @@ If the real data reveals a genuine missing concept in the canonical model, docum
 Maintain a concise progress table or summary after each domain, for example:
 
 ```text
-Buildings          MAPPED
-Hierarchy          MAPPED
-Service points     IN_REVIEW
-Occupancies        NOT_REVIEWED
-Deficiencies       NOT_REVIEWED
+Buildings / premises    MAPPED
+Hierarchy               MAPPED
+Transits                 IN_REVIEW
+Temporal occupancies    NOT_REVIEWED
+Tenure portions         NOT_REVIEWED
+Leases                   NOT_REVIEWED
+Deficiencies             NOT_REVIEWED
 ...
 ```
 
 # Completion condition
+
+The identity backbone is not complete until Agent M can explain deterministically, for a pilot case:
+
+1. which physical premises/building is being analyzed;
+2. which site contains it;
+3. which transit(s) occupy it at the analysis date;
+4. the effective occupancy period(s);
+5. whether each relevant portion is owned or leased;
+6. which lease applies to which leased occupancy/premises;
+7. how historical transit movement is preserved.
 
 The onboarding phase is ready to hand off to live analysis only when at least one selected pilot building can be transformed deterministically into a trusted `site_context.json`, with acceptable Data Quality Gate status and explicit human confirmation that the site context represents the real site correctly.
 
