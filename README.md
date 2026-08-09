@@ -8,6 +8,8 @@ Synthetic reference architecture for a configurable, human-in-the-loop, site-cen
 
 **New to the methodology? Read [`docs/MASTERCLASS-COOKBOOK.md`](docs/MASTERCLASS-COOKBOOK.md) first.** It explains the business concepts, deterministic/agentic boundaries, every phase and agent, the cockpit, analysis levels, human review, revision loop, governance, common failure modes, and complete step-by-step operating recipes.
 
+**Deploying with real work data? Read [`docs/COPILOT-WORK-ONBOARDING.md`](docs/COPILOT-WORK-ONBOARDING.md) and [`docs/model-selection-guide.md`](docs/model-selection-guide.md).** The repository Copilot instructions also remind users to choose the model according to the task rather than using one model for everything.
+
 ## Product objective
 
 The repository is designed to support repeatable analysis of buildings **individually**, producing reviewed and traceable site-level work packages. It intentionally stops short of portfolio optimization. A future portfolio/scenario solution can consume approved work-package information products downstream.
@@ -75,6 +77,17 @@ New SPA version / further review
 
 Analysis effort is a separate dimension: `RAPID`, `STANDARD`, or `THOROUGH`.
 
+## Model selection
+
+The methodology is model-agnostic, but the default task routing is:
+
+- **Claude Opus / strongest available reasoning model:** semantic onboarding, Agent M, architecture comprehension, difficult identity/occupancy mapping, and early B/T validation.
+- **Codex / strongest available coding model:** adapters, deterministic validators, schemas, tests, orchestration, debugging and refactoring.
+- **Gemini / different model family:** independent challenge, second opinion and adversarial review.
+- **Deterministic Python:** authoritative calculations and validation whenever practical, particularly costing arithmetic.
+
+See `docs/model-selection-guide.md`. Actual model used should be recorded in run metadata; agents should not be permanently bound to one vendor/model.
+
 ## Desktop application
 
 Run:
@@ -98,6 +111,7 @@ The cockpit produces a versioned `analysis_manifest.json` describing the request
 7. Reviewed and revised artifacts are versioned rather than overwritten.
 8. Analysis depth is configurable without creating separate incompatible pipelines.
 9. Site-level evidence and review controls remain separate from future portfolio optimization.
+10. Model choice is task-dependent and recorded; methodology remains model-independent.
 
 ## Repository layout
 
@@ -152,6 +166,9 @@ Reviewed SPAs embed both the canonical site context and review metadata. The rev
 ## Key documentation
 
 - `docs/MASTERCLASS-COOKBOOK.md` — complete narrative learning and operating guide; recommended starting point.
+- `docs/COPILOT-WORK-ONBOARDING.md` — guided deployment and real-data onboarding protocol for GitHub Copilot.
+- `docs/model-selection-guide.md` — task-based model routing and reminder strategy.
+- `docs/identity-and-occupancy-model.md` — transit/site/building/occupancy/mixed-tenure identity model.
 - `docs/evolution-and-objectives.md` — why the solution evolved and what it is intended to do.
 - `docs/pipeline-workflow.md` — Mermaid view of the end-to-end pipeline and revision loop.
 - `docs/source-integration-architecture.md` — source-to-canonical mapping and integration approach.
