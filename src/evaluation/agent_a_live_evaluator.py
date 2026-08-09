@@ -14,8 +14,8 @@ def evaluate_agent_a(context: dict[str, Any], artifact: dict[str, Any]) -> dict[
 
     if artifact.get("stage") != "OPPORTUNITIES":
         failures.append("stage_must_be_opportunities")
-    if artifact.get("site_id") != context.get("building_id"):
-        failures.append("site_id_must_match_context")
+    if artifact.get("building_id") != context.get("building_id"):
+        failures.append("building_id_must_match_context")
 
     source_defs = {d.get("deficiency_id"): d for d in context.get("deficiencies", []) if d.get("deficiency_id")}
     opportunities = artifact.get("opportunities") or []
@@ -26,13 +26,12 @@ def evaluate_agent_a(context: dict[str, Any], artifact: dict[str, Any]) -> dict[
         if did not in source_defs:
             failures.append(f"unknown_source_deficiency:{did}")
             continue
-        if opp.get("site_id") != context.get("building_id"):
-            failures.append(f"opportunity_site_mismatch:{did}")
+        if opp.get("building_id") != context.get("building_id"):
+            failures.append(f"opportunity_building_mismatch:{did}")
         if did not in (opp.get("source_lineage") or []):
             failures.append(f"missing_deficiency_lineage:{did}")
 
         source = source_defs[did]
-        # Source facts must be preserved when populated in both source and output.
         comparisons = {
             "component_id": source.get("component_id"),
             "uniformat_code": source.get("uniformat_code"),
@@ -46,17 +45,16 @@ def evaluate_agent_a(context: dict[str, Any], artifact: dict[str, Any]) -> dict[
             if expected is not None and opp.get(field) != expected:
                 failures.append(f"source_fact_changed:{did}:{field}")
 
-    # V0.3 reference expectation: one normalized opportunity per deficiency.
     for did in source_defs:
         count = len(by_def.get(did, []))
         if count != 1:
             failures.append(f"expected_one_opportunity_per_deficiency:{did}:{count}")
 
-    # Agent A must not own downstream concepts.
     forbidden_keys = {
         "work_packages", "clusters", "indexed_cost", "indirect_costs",
         "total_estimated_cost", "recommendations", "executive_summary",
     }
+
     def walk(value: Any, path: str = "root") -> None:
         if isinstance(value, dict):
             for key, child in value.items():
@@ -66,15 +64,14 @@ def evaluate_agent_a(context: dict[str, Any], artifact: dict[str, Any]) -> dict[
         elif isinstance(value, list):
             for i, child in enumerate(value):
                 walk(child, f"{path}[{i}]")
+
     walk(artifact)
 
-    # Contextual records may be cited but should not suppress deficiencies at A.
     if context.get("projects") and len(opportunities) < len(source_defs):
         failures.append("project_context_suppressed_deficiency")
     if context.get("initiatives") and len(opportunities) < len(source_defs):
         failures.append("initiative_context_suppressed_deficiency")
 
-    # Accessibility unknown must never be converted by Agent A into a factual claim.
     unknown_accessibility = [a for a in context.get("accessibility", []) if a.get("compliance_status") == "unknown"]
     if unknown_accessibility:
         text = str(artifact).lower()
