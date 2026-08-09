@@ -4,11 +4,15 @@ Synthetic reference architecture for a configurable, human-in-the-loop, site-cen
 
 > Do not commit confidential operational data, production prompts, pricing tables, credentials, or real datasets to this public repository.
 
+## Start here
+
+**New to the methodology? Read [`docs/MASTERCLASS-COOKBOOK.md`](docs/MASTERCLASS-COOKBOOK.md) first.** It explains the business concepts, deterministic/agentic boundaries, every phase and agent, the cockpit, analysis levels, human review, revision loop, governance, common failure modes, and complete step-by-step operating recipes.
+
 ## Product objective
 
 The repository is designed to support repeatable analysis of buildings **individually**, producing reviewed and traceable site-level work packages. It intentionally stops short of portfolio optimization. A future portfolio/scenario solution can consume approved work-package information products downstream.
 
-The analysis is now configurable: users can choose validation-only, baseline work-package analysis, strategic site analysis, advanced investment analysis, or a custom module combination. Every configured run is represented by an `analysis_manifest.json`.
+The analysis is configurable: users can choose validation-only, baseline work-package analysis, strategic site analysis, advanced investment analysis, or a custom module combination. Every configured run is represented by an `analysis_manifest.json`.
 
 ## Core workflow
 
@@ -79,7 +83,7 @@ Run:
 python app/main.py
 ```
 
-The main desktop application provides building selection, validation, site-context generation, HTML datasheet generation and access to the **Site Analysis Cockpit**.
+The desktop application provides hierarchical multi-filter selection (`Region -> Branch -> Site -> Building`), multi-building batch scope, validation, site-context generation, HTML datasheet generation and access to the **Site Analysis Cockpit**. Batch operation preserves independent per-building artifacts and review histories.
 
 The cockpit produces a versioned `analysis_manifest.json` describing the requested depth, effort and enabled capabilities.
 
@@ -107,18 +111,7 @@ app/
   cockpit.py
 
 contracts/
-  analysis-manifest.schema.json
-  site-context.schema.json
-  review-record.schema.json
-  review-feedback.schema.json
-  ...
-
 profiles/
-  level-0-validation.json
-  level-1-work-packages.json
-  level-2-strategic.json
-  level-3-advanced.json
-
 mappings/
 crosswalks/
 rules/
@@ -131,6 +124,7 @@ src/
   orchestration/
   quality/
   review/
+  selection/
   spa/
   validator/
 
@@ -157,10 +151,12 @@ Reviewed SPAs embed both the canonical site context and review metadata. The rev
 
 ## Key documentation
 
+- `docs/MASTERCLASS-COOKBOOK.md` — complete narrative learning and operating guide; recommended starting point.
 - `docs/evolution-and-objectives.md` — why the solution evolved and what it is intended to do.
 - `docs/pipeline-workflow.md` — Mermaid view of the end-to-end pipeline and revision loop.
 - `docs/source-integration-architecture.md` — source-to-canonical mapping and integration approach.
-- `docs/v0.3-live-agent-a-testing.md` — first live Copilot Agent A validation approach.
+- `docs/selection-hierarchy.md` — Region/Branch/Site/Building selection hierarchy and its distinction from occupancy relationships.
+- `docs/v0.3-agent-a-live-test.md` — first live Copilot Agent A validation approach.
 - `spa_exchange/README.md` — versioned SPA lifecycle and processing conventions.
 
 ## Production integration principle
