@@ -1,14 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "pipeline-run.schema.json",
-  "title": "Pipeline Run Manifest",
+  "title": "Building Pipeline Run Manifest",
   "type": "object",
-  "required": ["run_id", "building_ids", "source_snapshots", "stage_states", "rule_versions", "agent_versions", "approvals", "unresolved_exceptions"],
+  "required": ["run_id", "building_id", "analysis_manifest_id", "source_snapshots", "stage_states", "rule_versions", "agent_versions", "approvals", "unresolved_exceptions"],
   "properties": {
     "run_id": {"type": "string"},
     "created_at": {"type": "string"},
-    "building_ids": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+    "building_id": {"type": "string"},
+    "site_id": {"type": ["string", "null"], "description": "Optional parent site identifier; never substitutes for building_id."},
+    "analysis_manifest_id": {"type": "string"},
+    "batch_id": {"type": ["string", "null"], "description": "Optional identifier linking independent building runs launched from one batch selection."},
     "service_point_ids": {"type": "array", "items": {"type": "string"}},
+    "transit_ids": {"type": "array", "items": {"type": "string"}},
     "source_snapshots": {
       "type": "array",
       "items": {
@@ -20,7 +24,8 @@
           "snapshot_id": {"type": "string"},
           "record_count": {"type": "integer", "minimum": 0},
           "effective_date": {"type": ["string", "null"]},
-          "schema_version": {"type": ["string", "null"]}
+          "schema_version": {"type": ["string", "null"]},
+          "mapping_version": {"type": ["string", "null"]}
         },
         "additionalProperties": true
       }
@@ -29,16 +34,19 @@
     "data_quality_results": {"type": "array", "items": {"type": "object"}},
     "rule_versions": {"type": "object", "additionalProperties": {"type": "string"}},
     "agent_versions": {"type": "object", "additionalProperties": {"type": "string"}},
+    "model_metadata": {"type": "object", "additionalProperties": {"type": "object"}},
     "stage_states": {
       "type": "object",
       "properties": {
-        "validation": {"enum": ["PENDING", "VALIDATED", "BLOCKED"]},
-        "opportunities": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
-        "clustering": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
-        "costing": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
-        "recommendation": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
-        "summary": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED"]},
-        "publishing": {"enum": ["PENDING", "READY", "PUBLISHED", "BLOCKED"]}
+        "validation": {"enum": ["PENDING", "VALIDATED", "BLOCKED", "NOT_REQUESTED"]},
+        "opportunities": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED", "NOT_REQUESTED"]},
+        "clustering": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED", "NOT_REQUESTED"]},
+        "costing": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED", "NOT_REQUESTED"]},
+        "recommendation": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED", "NOT_REQUESTED"]},
+        "summary": {"enum": ["PENDING", "READY", "APPROVED", "BLOCKED", "NOT_REQUESTED"]},
+        "publishing": {"enum": ["PENDING", "READY", "PUBLISHED", "BLOCKED", "NOT_REQUESTED"]},
+        "review": {"enum": ["PENDING", "IN_REVIEW", "APPROVED", "REVISION_REQUIRED", "BLOCKED", "NOT_REQUESTED"]},
+        "revision": {"enum": ["PENDING", "READY", "COMPLETED", "BLOCKED", "NOT_REQUESTED"]}
       },
       "additionalProperties": false
     },
@@ -50,9 +58,9 @@
         "required": ["stage", "status"],
         "properties": {
           "stage": {"type": "string"},
-          "status": {"enum": ["PENDING", "APPROVED", "REJECTED"]},
-          "approved_by": {"type": ["string", "null"]},
-          "approved_at": {"type": ["string", "null"]},
+          "status": {"enum": ["PENDING", "APPROVED", "APPROVED_WITH_CHANGES", "RETURN_FOR_REVISION", "DEFERRED", "REJECTED"]},
+          "reviewer_id": {"type": ["string", "null"]},
+          "reviewed_at": {"type": ["string", "null"]},
           "comment": {"type": ["string", "null"]}
         }
       }
