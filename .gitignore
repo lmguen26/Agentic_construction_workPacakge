@@ -1,0 +1,21 @@
+# Operational/local data must never be committed.
+data/
+
+# Local mapping overrides may contain internal schema names.
+mappings/local/
+crosswalks/local/
+
+# Generated live agent outputs unless explicitly sanitized.
+examples/archetypes/live_agent_a/*.json
+!examples/archetypes/live_agent_a/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Editors / OS
+.DS_Store
+Thumbs.db
