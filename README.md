@@ -8,9 +8,11 @@ Synthetic reference architecture for a configurable, human-in-the-loop, **buildi
 
 **Canonical source of truth:** [`docs/CANONICAL-CONVENTIONS.md`](docs/CANONICAL-CONVENTIONS.md). Use it when older examples or historical V0.1/V0.2 material conflicts with the current architecture.
 
-**New to the methodology?** Read [`docs/MASTERCLASS-COOKBOOK.md`](docs/MASTERCLASS-COOKBOOK.md). It explains the business concepts, deterministic/agentic boundaries, every phase and agent, the cockpit, analysis levels, human review, revision loop, governance, common failure modes, and complete step-by-step operating recipes.
+**New to the methodology?** Read [`docs/MASTERCLASS-COOKBOOK.md`](docs/MASTERCLASS-COOKBOOK.md).
 
 **Deploying with real work data?** Read [`docs/COPILOT-WORK-ONBOARDING.md`](docs/COPILOT-WORK-ONBOARDING.md), [`docs/identity-and-occupancy-model.md`](docs/identity-and-occupancy-model.md), and [`docs/model-selection-guide.md`](docs/model-selection-guide.md).
+
+**Running the configured pipeline?** Read [`docs/ORCHESTRATION-RUNTIME.md`](docs/ORCHESTRATION-RUNTIME.md).
 
 ## Product objective
 
@@ -45,19 +47,13 @@ Canonical site_context.json for one building_id
 Configurable analysis_manifest.json
         |
         v
-[A] Opportunity normalization
+Python orchestration control plane
         |
-        v
-[B] SALVO-inspired clustering / bundling / blending
-        |
-        v
-[C] Deterministic costing + bounded interpretation
-        |
-        v
-[T] Building/site strategic recommendation
-        |
-        v
-[E] Executive synthesis
+        +-> [A] Opportunity normalization
+        +-> [B] SALVO-inspired clustering / bundling / blending
+        +-> [C] Deterministic costing + bounded interpretation
+        +-> [T] Building/site strategic recommendation
+        +-> [E] Executive synthesis
         |
         v
 Versioned HTML SPA building datasheet
@@ -96,6 +92,17 @@ The methodology is model-agnostic, but the default task routing is:
 
 See `docs/model-selection-guide.md`. Actual model used should be recorded in run metadata; agents should not be permanently bound to one vendor/model.
 
+## Python setup
+
+After cloning:
+
+```bash
+python -m pip install -r requirements.txt
+python -m pytest -q
+```
+
+`jsonschema` is used to prevent a Copilot stage artifact from advancing unless it conforms to the canonical contract.
+
 ## Desktop application
 
 Run:
@@ -104,9 +111,42 @@ Run:
 python app/main.py
 ```
 
-The desktop application provides hierarchical multi-filter selection (`Region -> Branch -> Site -> Building`), multi-building batch scope, validation, site-context generation, HTML datasheet generation and access to the **Site Analysis Cockpit**. Batch operation preserves independent per-building artifacts and review histories.
+The desktop application provides hierarchical multi-filter selection (`Region -> Branch -> Site -> Building`), multi-building batch scope, validation, site-context generation, HTML datasheet generation and access to the **Site Analysis Cockpit**.
 
-The cockpit produces a versioned `analysis_manifest.json` describing the requested depth, effort and enabled capabilities for each building.
+The cockpit can now:
+
+- create per-building `analysis_manifest.json` files;
+- prepare one independent pipeline run per building;
+- create exactly one `next_stage_request.json` for the valid next agent;
+- run a deterministic reference pipeline to test orchestration/contracts before live Copilot use.
+
+## Live Copilot orchestration
+
+A prepared run is written under:
+
+```text
+data/runs/<building_id>/<analysis_id>/
+```
+
+In VS Code Copilot use:
+
+```text
+/continue-pipeline-run run_dir=data/runs/<building_id>/<analysis_id>
+```
+
+Copilot executes only the requested specialist stage and writes the declared JSON artifact. Python then validates and advances it:
+
+```bash
+python scripts/run_pipeline.py advance data/runs/<building_id>/<analysis_id>
+```
+
+Repeat until `READY_TO_PUBLISH`, then:
+
+```bash
+python scripts/run_pipeline.py publish data/runs/<building_id>/<analysis_id>
+```
+
+The governing runtime rule is: **the LLM proposes one bounded transformation; Python controls whether the pipeline is allowed to proceed.**
 
 ## Core principles
 
@@ -122,6 +162,8 @@ The cockpit produces a versioned `analysis_manifest.json` describing the request
 10. Building-level evidence and review controls remain separate from future portfolio optimization.
 11. Model choice is task-dependent and recorded; methodology remains model-independent.
 12. Current A/B/C/T/E contracts use required `building_id` and canonical `stage`; legacy `site_id-as-building` and `pipeline_state` conventions are deprecated.
+13. A custom analysis configuration cannot bypass required upstream A/B/C/T/E dependencies.
+14. One pipeline run always belongs to one building, even when runs are prepared in batches.
 
 ## Repository layout
 
@@ -133,6 +175,7 @@ The cockpit produces a versioned `analysis_manifest.json` describing the request
 app/
   main.py
   cockpit.py
+  selection_panel.py
 
 contracts/
 profiles/
@@ -151,6 +194,9 @@ src/
   selection/
   spa/
   validator/
+
+scripts/
+  run_pipeline.py
 
 spa_exchange/
   generated/
@@ -178,6 +224,7 @@ Reviewed SPAs embed both the canonical site context and review metadata. The rev
 - `docs/CANONICAL-CONVENTIONS.md` — normative current naming and architectural conventions.
 - `docs/MASTERCLASS-COOKBOOK.md` — complete narrative learning and operating guide.
 - `docs/COPILOT-WORK-ONBOARDING.md` — guided deployment and real-data onboarding protocol for GitHub Copilot.
+- `docs/ORCHESTRATION-RUNTIME.md` — executable Python/Copilot stage-control workflow.
 - `docs/identity-and-occupancy-model.md` — transit/site/building/occupancy/mixed-tenure identity model.
 - `docs/model-selection-guide.md` — task-based model routing and reminder strategy.
 - `docs/information-model-v0.2.md` — detailed information model, refreshed to the current canonical view while retaining its historical filename.
