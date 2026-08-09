@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "site-context.schema.json",
+  "title": "Canonical Site Context",
+  "type": "object",
+  "required": ["context_version", "building_id", "building", "service_points", "occupancies", "deficiencies", "components", "accessibility", "initiatives", "projects", "leases", "data_quality"],
+  "properties": {
+    "context_version": {"type": "string"},
+    "generated_at": {"type": "string"},
+    "building_id": {"type": "string"},
+    "building": {"type": "object"},
+    "service_points": {"type": "array", "items": {"type": "object"}},
+    "occupancies": {"type": "array", "items": {"type": "object"}},
+    "deficiencies": {"type": "array", "items": {"type": "object"}},
+    "components": {"type": "array", "items": {"type": "object"}},
+    "accessibility": {"type": "array", "items": {"type": "object"}},
+    "initiatives": {"type": "array", "items": {"type": "object"}},
+    "projects": {"type": "array", "items": {"type": "object"}},
+    "leases": {"type": "array", "items": {"type": "object"}},
+    "asset_strategy": {"type": ["object", "null"]},
+    "strategic_context": {"type": "array", "items": {"type": "object"}},
+    "risks": {"type": "array", "items": {"type": "object"}},
+    "energy_performance": {"type": "array", "items": {"type": "object"}},
+    "maintenance_history": {"type": "array", "items": {"type": "object"}},
+    "space_utilization": {"type": "array", "items": {"type": "object"}},
+    "spatial_references": {"type": "array", "items": {"type": "object"}},
+    "derived_facts": {
+      "type": "object",
+      "properties": {
+        "calculated_replacement_value": {"type": ["number", "null"]},
+        "active_service_point_count": {"type": "integer"},
+        "active_lease_count": {"type": "integer"},
+        "earliest_active_lease_end_date": {"type": ["string", "null"]},
+        "detention_horizon_years": {"type": ["number", "null"]},
+        "detention_band": {"enum": ["LT_2_YEARS", "2_TO_5_YEARS", "GT_5_YEARS", "UNKNOWN"]},
+        "strategic_context_available": {"type": "boolean"}
+      }
+    },
+    "data_quality": {
+      "type": "object",
+      "required": ["status", "association_exceptions"],
+      "properties": {
+        "status": {"enum": ["VALIDATED", "REVIEW_REQUIRED", "BLOCKED"]},
+        "association_exceptions": {"type": "array", "items": {"type": "object"}},
+        "warnings": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "source_lineage": {"type": "array", "items": {"type": "object"}}
+  }
+}

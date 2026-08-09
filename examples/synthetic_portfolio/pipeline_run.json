@@ -1,0 +1,57 @@
+{
+  "run_id": "RUN-SYNTH-0001",
+  "created_at": "2026-08-08T17:20:00-04:00",
+  "building_ids": ["BLDG-001", "BLDG-002", "BLDG-003"],
+  "service_point_ids": ["SP-001", "SP-002", "SP-003", "SP-004"],
+  "source_snapshots": [
+    {"source_name":"buildings","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":3,"schema_version":"0.2"},
+    {"source_name":"service_points","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":4,"schema_version":"0.2"},
+    {"source_name":"occupancies","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":4,"schema_version":"0.2"},
+    {"source_name":"deficiencies","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":3,"schema_version":"0.2"},
+    {"source_name":"components","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":3,"schema_version":"0.2"},
+    {"source_name":"accessibility","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":3,"schema_version":"0.2"},
+    {"source_name":"initiatives","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":2,"schema_version":"0.2"},
+    {"source_name":"projects","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":2,"schema_version":"0.2"},
+    {"source_name":"leases","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":2,"schema_version":"0.2"},
+    {"source_name":"asset_strategy_finance","status":"PRESENT","snapshot_id":"SYNTH-v0.2","record_count":3,"schema_version":"0.2"},
+    {"source_name":"energy_carbon","status":"MISSING","snapshot_id":"SYNTH-v0.2","record_count":0,"schema_version":null},
+    {"source_name":"maintenance_history","status":"MISSING","snapshot_id":"SYNTH-v0.2","record_count":0,"schema_version":null}
+  ],
+  "association_exceptions": [
+    {"severity":"INFO","code":"MULTI_OCCUPANT_BUILDING","building_id":"BLDG-003","message":"Two active service-point occupancies exist; business and lease joins must use occupancy/service-point context."}
+  ],
+  "data_quality_results": [],
+  "rule_versions": {
+    "normalization":"0.1-example",
+    "clustering":"0.1-example",
+    "costing":"0.1-example",
+    "strategy":"0.1-example"
+  },
+  "agent_versions": {
+    "orchestrator":"0.2",
+    "agent_a":"0.2",
+    "agent_b":"0.2",
+    "agent_c":"0.2",
+    "agent_t":"0.2",
+    "agent_e":"0.2"
+  },
+  "stage_states": {
+    "validation":"PENDING",
+    "opportunities":"PENDING",
+    "clustering":"PENDING",
+    "costing":"PENDING",
+    "recommendation":"PENDING",
+    "summary":"PENDING",
+    "publishing":"PENDING"
+  },
+  "artifact_paths": {},
+  "approvals": [
+    {"stage":"validation","status":"PENDING","approved_by":null,"approved_at":null,"comment":null},
+    {"stage":"opportunities","status":"PENDING","approved_by":null,"approved_at":null,"comment":null},
+    {"stage":"clustering","status":"PENDING","approved_by":null,"approved_at":null,"comment":null},
+    {"stage":"costing","status":"PENDING","approved_by":null,"approved_at":null,"comment":null},
+    {"stage":"recommendation","status":"PENDING","approved_by":null,"approved_at":null,"comment":null},
+    {"stage":"summary","status":"PENDING","approved_by":null,"approved_at":null,"comment":null}
+  ],
+  "unresolved_exceptions": []
+}

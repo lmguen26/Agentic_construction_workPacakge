@@ -1,0 +1,76 @@
+{
+  "note": "Fictional archetype portfolio for deterministic pipeline testing.",
+  "archetypes": [
+    {"archetype_id":"ARCH-01","name":"Long-term owned","building_id":"BLDG-A1","expected_behavior":["lease_not_applicable","detention_gt_5","normal_work_generation"]},
+    {"archetype_id":"ARCH-02","name":"Lease expiry approaching","building_id":"BLDG-A2","expected_behavior":["lease_required","detention_2_to_5","major_capital_review"]},
+    {"archetype_id":"ARCH-03","name":"Multi-service-point building","building_id":"BLDG-A3","expected_behavior":["preserve_occupancy_relations","do_not_flatten_service_points"]},
+    {"archetype_id":"ARCH-04","name":"High FCI aging building","building_id":"BLDG-A4","expected_behavior":["surface_high_condition_burden","strategy_review"]},
+    {"archetype_id":"ARCH-05","name":"Future initiative overlap","building_id":"BLDG-A5","expected_behavior":["detect_future_initiative","bundle_or_defer_candidate"]},
+    {"archetype_id":"ARCH-06","name":"Active project overlap","building_id":"BLDG-A6","expected_behavior":["avoid_duplicate_scope","surface_project_dependency"]},
+    {"archetype_id":"ARCH-07","name":"Accessibility-driven","building_id":"BLDG-A7","expected_behavior":["preserve_unknown_vs_non_compliant","surface_accessibility_scope"]},
+    {"archetype_id":"ARCH-08","name":"Association conflict","building_id":"BLDG-A8","expected_behavior":["block_on_association_conflict"]}
+  ],
+  "buildings": [
+    {"building_id":"BLDG-A1","building_name":"Caisse Fictive A1","ownership_type":"owned","gross_area_sqft":18000,"replacement_cost_per_sqft":400},
+    {"building_id":"BLDG-A2","building_name":"Caisse Fictive A2","ownership_type":"leased","gross_area_sqft":9000,"replacement_cost_per_sqft":400},
+    {"building_id":"BLDG-A3","building_name":"Caisse Fictive A3","ownership_type":"mixed","gross_area_sqft":26000,"replacement_cost_per_sqft":400},
+    {"building_id":"BLDG-A4","building_name":"Caisse Fictive A4","ownership_type":"owned","gross_area_sqft":22000,"replacement_cost_per_sqft":400},
+    {"building_id":"BLDG-A5","building_name":"Caisse Fictive A5","ownership_type":"owned","gross_area_sqft":15000,"replacement_cost_per_sqft":400},
+    {"building_id":"BLDG-A6","building_name":"Caisse Fictive A6","ownership_type":"owned","gross_area_sqft":14000,"replacement_cost_per_sqft":400},
+    {"building_id":"BLDG-A7","building_name":"Caisse Fictive A7","ownership_type":"owned","gross_area_sqft":11000,"replacement_cost_per_sqft":400},
+    {"building_id":"BLDG-A8","building_name":"Caisse Fictive A8","ownership_type":"leased","gross_area_sqft":10000,"replacement_cost_per_sqft":400}
+  ],
+  "service_points": [
+    {"service_point_id":"SP-A1"},{"service_point_id":"SP-A2"},{"service_point_id":"SP-A3A"},{"service_point_id":"SP-A3B"},{"service_point_id":"SP-A4"},{"service_point_id":"SP-A5"},{"service_point_id":"SP-A6"},{"service_point_id":"SP-A7"},{"service_point_id":"SP-A8"}
+  ],
+  "occupancies": [
+    {"occupancy_id":"OCC-A1","building_id":"BLDG-A1","service_point_id":"SP-A1","occupancy_status":"active","is_current":true},
+    {"occupancy_id":"OCC-A2","building_id":"BLDG-A2","service_point_id":"SP-A2","occupancy_status":"active","is_current":true},
+    {"occupancy_id":"OCC-A3A","building_id":"BLDG-A3","service_point_id":"SP-A3A","occupancy_status":"active","is_current":true},
+    {"occupancy_id":"OCC-A3B","building_id":"BLDG-A3","service_point_id":"SP-A3B","occupancy_status":"active","is_current":true},
+    {"occupancy_id":"OCC-A4","building_id":"BLDG-A4","service_point_id":"SP-A4","occupancy_status":"active","is_current":true},
+    {"occupancy_id":"OCC-A5","building_id":"BLDG-A5","service_point_id":"SP-A5","occupancy_status":"active","is_current":true},
+    {"occupancy_id":"OCC-A6","building_id":"BLDG-A6","service_point_id":"SP-A6","occupancy_status":"active","is_current":true},
+    {"occupancy_id":"OCC-A7","building_id":"BLDG-A7","service_point_id":"SP-A7","occupancy_status":"active","is_current":true},
+    {"occupancy_id":"OCC-A8","building_id":"BLDG-A8","service_point_id":"SP-A8","occupancy_status":"active","is_current":true}
+  ],
+  "deficiencies": [
+    {"deficiency_id":"DEF-A1","building_id":"BLDG-A1","title":"Roof repair","inspection_date":"2026-01-01"},
+    {"deficiency_id":"DEF-A2","building_id":"BLDG-A2","title":"HVAC replacement","inspection_date":"2026-01-01"},
+    {"deficiency_id":"DEF-A3","building_id":"BLDG-A3","title":"Electrical renewal","inspection_date":"2026-01-01"},
+    {"deficiency_id":"DEF-A4","building_id":"BLDG-A4","title":"Multiple envelope failures","inspection_date":"2026-01-01"},
+    {"deficiency_id":"DEF-A5","building_id":"BLDG-A5","title":"Interior finish renewal","inspection_date":"2026-01-01"},
+    {"deficiency_id":"DEF-A6","building_id":"BLDG-A6","title":"Lighting replacement","inspection_date":"2026-01-01"},
+    {"deficiency_id":"DEF-A7","building_id":"BLDG-A7","title":"Entrance upgrade","inspection_date":"2026-01-01"},
+    {"deficiency_id":"DEF-A8","building_id":"BLDG-A8","title":"Roof repair","inspection_date":"2026-01-01"}
+  ],
+  "asset_strategy": [
+    {"strategy_record_id":"STR-A1","building_id":"BLDG-A1","detention_horizon_years":10,"fci":0.10},
+    {"strategy_record_id":"STR-A2","building_id":"BLDG-A2","detention_horizon_years":3},
+    {"strategy_record_id":"STR-A3","building_id":"BLDG-A3","detention_horizon_years":6},
+    {"strategy_record_id":"STR-A4","building_id":"BLDG-A4","detention_horizon_years":8,"fci":0.35},
+    {"strategy_record_id":"STR-A5","building_id":"BLDG-A5","detention_horizon_years":7},
+    {"strategy_record_id":"STR-A6","building_id":"BLDG-A6","detention_horizon_years":7},
+    {"strategy_record_id":"STR-A7","building_id":"BLDG-A7","detention_horizon_years":7},
+    {"strategy_record_id":"STR-A8","building_id":"BLDG-A8","detention_horizon_years":4}
+  ],
+  "leases": [
+    {"lease_id":"LEASE-A2","building_id":"BLDG-A2","service_point_id":"SP-A2","occupancy_id":"OCC-A2","lease_status":"active","lease_end_date":"2028-06-30"},
+    {"lease_id":"LEASE-A3","building_id":"BLDG-A3","service_point_id":"SP-A3B","occupancy_id":"OCC-A3B","lease_status":"active","lease_end_date":"2030-01-01"},
+    {"lease_id":"LEASE-A8","building_id":"BLDG-A8","service_point_id":"SP-INVALID","occupancy_id":"OCC-INVALID","lease_status":"active","lease_end_date":"2029-01-01"}
+  ],
+  "initiatives": [
+    {"initiative_id":"INIT-A5","building_id":"BLDG-A5","service_point_id":"SP-A5","initiative_name":"Full interior modernization","planned_start_year":2028}
+  ],
+  "projects": [
+    {"project_id":"PRJ-A6","building_id":"BLDG-A6","service_point_id":"SP-A6","project_name":"Lighting modernization","project_status":"active","affected_uniformat_codes":["D5020"]}
+  ],
+  "accessibility": [
+    {"accessibility_assessment_id":"ACC-A7-1","building_id":"BLDG-A7","criterion_id":"DOOR-AUTO","compliance_status":"non_compliant"},
+    {"accessibility_assessment_id":"ACC-A7-2","building_id":"BLDG-A7","criterion_id":"WASHROOM","compliance_status":"unknown"}
+  ],
+  "components": [],
+  "strategic_context": [
+    {"strategic_context_id":"CTX-A2","building_id":"BLDG-A2","structured_summary":"Lease decision expected before major capital commitment.","strategic_intent":["Confirm future occupancy before major investment"],"human_validated":true}
+  ]
+}

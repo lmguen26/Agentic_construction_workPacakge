@@ -1,0 +1,38 @@
+{
+  "version": "0.2.2",
+  "principle": "Evaluate semantic behavior and traceability, not exact agent prose.",
+  "archetypes": {
+    "BLDG-A1": {
+      "must": ["preserve_DEF-A1_lineage", "detention_band_GT_5_YEARS", "generate_work_candidate"],
+      "must_not": ["invent_lease_constraint"]
+    },
+    "BLDG-A2": {
+      "must": ["preserve_DEF-A2_lineage", "surface_LEASE-A2", "detention_band_2_TO_5_YEARS", "surface_strategic_context_CTX-A2", "require_major_capital_review"],
+      "must_not": ["recommend_unconditional_major_capital_commitment"]
+    },
+    "BLDG-A3": {
+      "must": ["preserve_two_service_points", "preserve_OCC-A3A", "preserve_OCC-A3B", "associate_LEASE-A3_only_with_SP-A3B"],
+      "must_not": ["flatten_business_entities"]
+    },
+    "BLDG-A4": {
+      "must": ["surface_fci_0_35", "preserve_DEF-A4_lineage", "require_strategy_review"],
+      "must_not": ["treat_deficiency_as_isolated_without_condition_context"]
+    },
+    "BLDG-A5": {
+      "must": ["preserve_DEF-A5_lineage", "surface_INIT-A5", "identify_scope_overlap_candidate", "consider_bundle_or_defer"],
+      "must_not": ["ignore_future_initiative"]
+    },
+    "BLDG-A6": {
+      "must": ["preserve_DEF-A6_lineage", "surface_PRJ-A6", "identify_existing_project_overlap", "avoid_duplicate_scope"],
+      "must_not": ["create_duplicate_independent_scope_without_exception"]
+    },
+    "BLDG-A7": {
+      "must": ["preserve_ACC-A7-1_non_compliant", "preserve_ACC-A7-2_unknown", "surface_accessibility_scope"],
+      "must_not": ["convert_unknown_to_non_compliant"]
+    },
+    "BLDG-A8": {
+      "must": ["detect_LEASE_SERVICE_POINT_MISMATCH", "detect_LEASE_OCCUPANCY_MISMATCH", "block_downstream_agent_execution"],
+      "must_not": ["generate_A_B_C_T_E_artifacts"]
+    }
+  }
+}

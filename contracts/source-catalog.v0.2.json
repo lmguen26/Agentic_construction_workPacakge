@@ -1,0 +1,21 @@
+{
+  "catalog_version": "0.2",
+  "sources": [
+    {"source_name":"buildings","required":true,"primary_key":"building_id","scope":"physical building/site master"},
+    {"source_name":"service_points","required":true,"primary_key":"service_point_id","scope":"business/service entities"},
+    {"source_name":"occupancies","required":true,"primary_key":"occupancy_id","foreign_keys":["service_point_id","building_id"],"scope":"temporal relationship between service point and building"},
+    {"source_name":"deficiencies","required":true,"primary_key":"deficiency_id","foreign_keys":["building_id","component_id?"],"scope":"FCA observations and corrective actions"},
+    {"source_name":"components","required":false,"primary_key":"component_id","foreign_keys":["building_id"],"scope":"asset/component register"},
+    {"source_name":"accessibility","required":false,"primary_key":"accessibility_assessment_id","foreign_keys":["building_id"],"scope":"universal accessibility criteria"},
+    {"source_name":"initiatives","required":false,"primary_key":"initiative_id","foreign_keys":["building_id","service_point_id?"],"scope":"known future initiatives"},
+    {"source_name":"projects","required":false,"primary_key":"project_id","foreign_keys":["building_id","service_point_id?"],"scope":"planned, active or recently completed projects"},
+    {"source_name":"leases","required_if":"ownership_type == leased OR mixed","primary_key":"lease_id","foreign_keys":["building_id","service_point_id","occupancy_id"],"scope":"lease and renewal/exit dates"},
+    {"source_name":"risks_compliance","required":false,"primary_key":"risk_id","foreign_keys":["building_id"],"scope":"flood, safety, regulatory, asbestos and other risks"},
+    {"source_name":"energy_carbon","required":false,"primary_key":"performance_record_id","foreign_keys":["building_id"],"scope":"energy, emissions and performance indicators"},
+    {"source_name":"asset_strategy","required":false,"primary_key":"strategy_record_id","foreign_keys":["building_id"],"scope":"detention horizon, FCI/BFI, capital constraints, amortization and ownership strategy"},
+    {"source_name":"strategic_context","required":false,"primary_key":"strategic_context_id","foreign_keys":["building_id","service_point_id?"],"scope":"structured transcription of qualitative strategic context, intentions, constraints, assumptions and stakeholder signals","value":"high_optional_enrichment","consumers":["agent-t-strategy","agent-e-summary"]},
+    {"source_name":"maintenance_history","required":false,"primary_key":"maintenance_record_id","foreign_keys":["building_id","component_id?"],"scope":"CMMS/work order and recurring failure evidence"},
+    {"source_name":"space_utilization","required":false,"primary_key":"space_record_id","foreign_keys":["building_id","service_point_id?"],"scope":"space, vacancy, occupancy and utilization"},
+    {"source_name":"bim_gis_references","required":false,"primary_key":"reference_id","foreign_keys":["building_id"],"scope":"BIM, GIS, floor/space, imagery and geometry references"}
+  ]
+}
