@@ -41,9 +41,9 @@ def test_level_0_prepares_without_agent_stage(tmp_path):
 def test_reference_level_1_completes_and_generates_spa(tmp_path, monkeypatch):
     manifest = build_manifest("BLDG-001", "LEVEL_1_WORK_PACKAGES")
 
-    # Keep generated SPA under the test temp directory.
     import src.orchestration.pipeline_orchestrator as po
-    monkeypatch.setattr(po, "SPA_GENERATED_DIR", tmp_path / "spa")
+    real_publish = po.publish_spa
+    monkeypatch.setattr(po, "publish_spa", lambda run_dir: real_publish(run_dir, tmp_path / "spa"))
 
     result = run_reference_mode(load_portfolio(), manifest, runs_dir=tmp_path / "runs")
     assert result["state"]["status"] == "COMPLETED"
