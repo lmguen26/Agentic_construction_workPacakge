@@ -8,6 +8,7 @@ from tkinter import ttk, messagebox
 from app.selection_panel import HierarchicalSelectionPanel
 from src.capabilities.registry import CAPABILITIES, EFFORT_LEVELS
 from src.orchestration.analysis_manifest import build_manifest, load_profile
+from src.orchestration.pipeline_orchestrator import prepare_run, run_reference_mode
 from src.quality.data_quality_gate import evaluate_site
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,7 +19,7 @@ class SiteAnalysisCockpit(tk.Toplevel):
     def __init__(self, master: tk.Misc, portfolio: dict, buildings: list[dict]):
         super().__init__(master)
         self.title("Site Analysis Cockpit")
-        self.geometry("1120x900")
+        self.geometry("1160x940")
         self.portfolio = portfolio
         self.buildings = buildings
         self.profile_id = tk.StringVar(value="LEVEL_1_WORK_PACKAGES")
@@ -70,10 +71,19 @@ class SiteAnalysisCockpit(tk.Toplevel):
         self.readiness.pack(fill="x", pady=8)
         self.readiness.configure(state="disabled")
 
-        actions = ttk.Frame(outer)
-        actions.pack(fill="x")
-        ttk.Button(actions, text="Refresh readiness", command=self._refresh_readiness).pack(side="left")
-        ttk.Button(actions, text="Create analysis manifests", command=self._create_manifests).pack(side="right")
+        actions = ttk.LabelFrame(outer, text="Run preparation", padding=10)
+        actions.pack(fill="x", pady=(4, 0))
+        ttk.Button(actions, text="Refresh readiness", command=self._refresh_readiness).pack(side="left", padx=(0, 6))
+        ttk.Button(actions, text="Create analysis manifests", command=self._create_manifests).pack(side="left", padx=6)
+        ttk.Button(actions, text="Prepare Copilot pipeline run(s)", command=self._prepare_pipeline_runs).pack(side="left", padx=6)
+        ttk.Button(actions, text="Run deterministic reference pipeline", command=self._run_reference_pipelines).pack(side="right", padx=(6, 0))
+
+        ttk.Label(
+            outer,
+            text="Live mode prepares one run folder and one next-stage request per building. Use /continue-pipeline-run in Copilot; Python validates each returned artifact before the next stage becomes available. Reference mode tests orchestration only and does not replace live agents.",
+            foreground="#555555",
+            wraplength=1080,
+        ).pack(anchor="w", pady=(7, 0))
         self._refresh_readiness()
 
     def _selected_buildings(self) -> list[dict]:
@@ -116,12 +126,27 @@ class SiteAnalysisCockpit(tk.Toplevel):
         lines.insert(1, f"Validated={counts.get('VALIDATED',0)} · Review required={counts.get('REVIEW_REQUIRED',0)} · Blocked={counts.get('BLOCKED',0)}")
         self._set_readiness("\n".join(lines))
 
+    def _manifest_for_building(self, b: dict) -> dict:
+        modules = {k: v.get() for k, v in self.module_vars.items()}
+        manifest = build_manifest(
+            building_id=b["building_id"],
+            profile_id=self.profile_id.get(),
+            effort=self.effort.get(),
+            requested_by=self.requested_by.get().strip() or None,
+            module_overrides=modules,
+        )
+        manifest["selection_scope"] = {
+            "region_id": b.get("region_id"),
+            "branch_id": b.get("branch_id"),
+            "site_id": b.get("site_id"),
+        }
+        return manifest
+
     def _create_manifests(self):
         selected = self._selected_buildings()
         if not selected:
             messagebox.showwarning("No scope", "Select at least one building or higher-level scope.")
             return
-        modules = {k: v.get() for k, v in self.module_vars.items()}
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         created, blocked = [], []
         for b in selected:
@@ -130,18 +155,7 @@ class SiteAnalysisCockpit(tk.Toplevel):
             if quality.get("gate_status") == "BLOCKED":
                 blocked.append(bid)
                 continue
-            manifest = build_manifest(
-                building_id=bid,
-                profile_id=self.profile_id.get(),
-                effort=self.effort.get(),
-                requested_by=self.requested_by.get().strip() or None,
-                module_overrides=modules,
-            )
-            manifest["selection_scope"] = {
-                "region_id": b.get("region_id"),
-                "branch_id": b.get("branch_id"),
-                "site_id": b.get("site_id"),
-            }
+            manifest = self._manifest_for_building(b)
             path = OUTPUT_DIR / f"{bid}.analysis_manifest.json"
             path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
             created.append(str(path))
@@ -161,6 +175,46 @@ class SiteAnalysisCockpit(tk.Toplevel):
         }
         (OUTPUT_DIR / "latest_batch_selection.json").write_text(json.dumps(batch_index, indent=2), encoding="utf-8")
         messagebox.showinfo("Analysis manifests", f"Created {len(created)} manifest(s).\nBlocked: {len(blocked)}")
+
+    def _prepare_pipeline_runs(self):
+        selected = self._selected_buildings()
+        if not selected:
+            messagebox.showwarning("No scope", "Select at least one building or higher-level scope.")
+            return
+        prepared, blocked = [], []
+        for b in selected:
+            manifest = self._manifest_for_building(b)
+            result = prepare_run(self.portfolio, manifest)
+            if result["state"].get("status") == "BLOCKED":
+                blocked.append(b["building_id"])
+            else:
+                prepared.append(result["run_dir"])
+        self._set_readiness(
+            "Prepared Copilot runs:\n" + "\n".join(prepared) +
+            ("\n\nBlocked:\n" + "\n".join(blocked) if blocked else "") +
+            "\n\nNext: in VS Code Copilot use /continue-pipeline-run with one run_dir."
+        )
+        messagebox.showinfo("Pipeline runs", f"Prepared {len(prepared)} independent run(s).\nBlocked: {len(blocked)}")
+
+    def _run_reference_pipelines(self):
+        selected = self._selected_buildings()
+        if not selected:
+            messagebox.showwarning("No scope", "Select at least one building or higher-level scope.")
+            return
+        completed, failed = [], []
+        for b in selected:
+            manifest = self._manifest_for_building(b)
+            result = run_reference_mode(self.portfolio, manifest)
+            state = result.get("state", {})
+            if state.get("status") == "COMPLETED":
+                completed.append(f"{b['building_id']} -> {result.get('spa_path')}")
+            else:
+                failed.append(f"{b['building_id']} -> {state.get('status')}")
+        self._set_readiness(
+            "Reference pipeline results:\n" + "\n".join(completed) +
+            ("\n\nNot completed:\n" + "\n".join(failed) if failed else "")
+        )
+        messagebox.showinfo("Reference pipeline", f"Completed {len(completed)} reference run(s).\nNot completed: {len(failed)}")
 
 
 def open_cockpit(master: tk.Misc, portfolio: dict, buildings: list[dict]):
