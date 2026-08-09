@@ -3,32 +3,47 @@
   "$id": "opportunities.schema.json",
   "title": "Normalized Opportunities",
   "type": "object",
-  "required": ["site_id", "stage", "opportunities"],
+  "required": ["building_id", "stage", "source_context_id", "opportunities", "stage_exceptions"],
   "properties": {
-    "site_id": {"type": "string"},
+    "building_id": {"type": "string"},
+    "site_id": {"type": ["string", "null"], "description": "Optional parent site identifier; never substitutes for building_id."},
     "stage": {"const": "OPPORTUNITIES"},
-    "source_artifact": {"type": "string"},
+    "source_context_id": {"type": "string"},
+    "agent_version": {"type": "string"},
+    "model_metadata": {"type": "object"},
+    "rule_versions": {"type": "array", "items": {"type": "string"}},
     "opportunities": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["opportunity_id", "source_deficiency_id", "title", "description"],
+        "required": ["opportunity_id", "source_deficiency_id", "building_id", "title", "description", "action_type", "source_lineage", "assumptions", "exceptions"],
         "properties": {
           "opportunity_id": {"type": "string"},
           "source_deficiency_id": {"type": "string"},
+          "building_id": {"type": "string"},
+          "site_id": {"type": ["string", "null"]},
+          "component_id": {"type": ["string", "null"]},
           "title": {"type": "string"},
           "description": {"type": "string"},
+          "action_type": {"type": ["string", "null"]},
           "system": {"type": ["string", "null"]},
+          "uniformat_code": {"type": ["string", "null"]},
           "location": {"type": ["string", "null"]},
-          "priority": {"type": ["string", "null"]},
-          "intervention_horizon_years": {"type": ["number", "null"]},
-          "base_cost": {"type": ["number", "null"], "minimum": 0},
-          "evidence": {"type": "array", "items": {"type": "string"}},
-          "assumptions": {"type": "array", "items": {"type": "string"}}
+          "condition_rating": {"type": ["string", "null"]},
+          "intervention_horizon": {"type": ["string", "null"]},
+          "source_cost": {"type": ["number", "null"], "minimum": 0},
+          "observation": {"type": ["string", "null"]},
+          "source_proposed_corrective_action": {"type": ["string", "null"]},
+          "source_lineage": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "facts_used": {"type": "array", "items": {"type": "string"}},
+          "interpretation": {"type": ["string", "null"]},
+          "assumptions": {"type": "array", "items": {"type": "string"}},
+          "exceptions": {"type": "array", "items": {"type": "string"}}
         },
-        "additionalProperties": true
+        "additionalProperties": false
       }
-    }
+    },
+    "stage_exceptions": {"type": "array", "items": {"type": "string"}}
   },
-  "additionalProperties": true
+  "additionalProperties": false
 }

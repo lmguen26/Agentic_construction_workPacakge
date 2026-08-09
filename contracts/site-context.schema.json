@@ -1,22 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "site-context.schema.json",
-  "title": "Canonical Site Context",
+  "title": "Canonical Building Site Context",
   "type": "object",
   "required": ["context_version", "building_id", "building", "service_points", "occupancies", "deficiencies", "components", "accessibility", "initiatives", "projects", "leases", "data_quality"],
   "properties": {
     "context_version": {"type": "string"},
     "generated_at": {"type": "string"},
-    "building_id": {"type": "string"},
+    "analysis_date": {"type": ["string", "null"], "description": "Date at which temporal occupancy/lease relationships are interpreted for this context."},
+    "region_id": {"type": ["string", "null"]},
+    "branch_id": {"type": ["string", "null"]},
+    "site_id": {"type": ["string", "null"], "description": "Parent logical/location site identifier."},
+    "building_id": {"type": "string", "description": "Physical building/premises analysis identifier."},
     "building": {"type": "object"},
-    "service_points": {"type": "array", "items": {"type": "object"}},
-    "occupancies": {"type": "array", "items": {"type": "object"}},
+    "service_points": {"type": "array", "items": {"type": "object"}, "description": "Business/service-point records, including transit identity where applicable; not physical building identifiers."},
+    "occupancies": {"type": "array", "items": {"type": "object"}, "description": "Temporal relationships between service points/transits and physical building/premises."},
+    "premises": {"type": "array", "items": {"type": "object"}, "description": "Optional premises/building-portion layer used when real data requires explicit mixed-tenure or subdivided physical scope."},
     "deficiencies": {"type": "array", "items": {"type": "object"}},
     "components": {"type": "array", "items": {"type": "object"}},
     "accessibility": {"type": "array", "items": {"type": "object"}},
     "initiatives": {"type": "array", "items": {"type": "object"}},
     "projects": {"type": "array", "items": {"type": "object"}},
-    "leases": {"type": "array", "items": {"type": "object"}},
+    "leases": {"type": "array", "items": {"type": "object"}, "description": "Lease records linked to applicable leased occupancy/premises relationships, not automatically to the whole site."},
     "asset_strategy": {"type": ["object", "null"]},
     "strategic_context": {"type": "array", "items": {"type": "object"}},
     "risks": {"type": "array", "items": {"type": "object"}},
@@ -29,11 +34,13 @@
       "properties": {
         "calculated_replacement_value": {"type": ["number", "null"]},
         "active_service_point_count": {"type": "integer"},
+        "active_transit_count": {"type": ["integer", "null"]},
         "active_lease_count": {"type": "integer"},
         "earliest_active_lease_end_date": {"type": ["string", "null"]},
         "detention_horizon_years": {"type": ["number", "null"]},
         "detention_band": {"enum": ["LT_2_YEARS", "2_TO_5_YEARS", "GT_5_YEARS", "UNKNOWN"]},
-        "strategic_context_available": {"type": "boolean"}
+        "strategic_context_available": {"type": "boolean"},
+        "mixed_tenure_detected": {"type": ["boolean", "null"]}
       }
     },
     "data_quality": {

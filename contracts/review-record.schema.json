@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review-record.schema.json",
+  "title": "Human Review Record",
+  "type": "object",
+  "required": ["review_id", "building_id", "reviewer_id", "review_started_at", "review_status", "work_package_reviews"],
+  "properties": {
+    "review_id": {"type": "string"},
+    "building_id": {"type": "string"},
+    "pipeline_run_id": {"type": ["string", "null"]},
+    "artifact_version": {"type": ["string", "null"]},
+    "reviewer_id": {"type": "string", "minLength": 1},
+    "reviewer_name": {"type": ["string", "null"]},
+    "reviewer_role": {"type": ["string", "null"]},
+    "review_started_at": {"type": "string"},
+    "review_completed_at": {"type": ["string", "null"]},
+    "review_status": {"enum": ["NOT_STARTED", "IN_PROGRESS", "COMPLETED", "RETURNED_FOR_REVISION"]},
+    "completion_confirmed": {"type": "boolean"},
+    "overall_comment": {"type": ["string", "null"]},
+    "work_package_reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["work_package_id", "decision", "reviewed_at"],
+        "properties": {
+          "work_package_id": {"type": "string"},
+          "decision": {"enum": ["APPROVE", "APPROVE_WITH_CHANGES", "RETURN_FOR_REVISION", "DEFER", "REJECT", "NOT_REVIEWED"]},
+          "reviewed_at": {"type": "string"},
+          "reviewer_comment": {"type": ["string", "null"]},
+          "scope_change_requested": {"type": "boolean"},
+          "cost_review_required": {"type": "boolean"},
+          "timing_review_required": {"type": "boolean"},
+          "risk_review_required": {"type": "boolean"},
+          "completion_confirmed": {"type": "boolean"}
+        }
+      }
+    },
+    "audit_events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["event_type", "timestamp", "actor_id"],
+        "properties": {
+          "event_type": {"type": "string"},
+          "timestamp": {"type": "string"},
+          "actor_id": {"type": "string"},
+          "details": {"type": "object"}
+        }
+      }
+    }
+  }
+}

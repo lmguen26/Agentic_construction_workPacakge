@@ -3,28 +3,38 @@
   "$id": "recommendations.schema.json",
   "title": "Strategic Recommendations",
   "type": "object",
-  "required": ["site_id", "stage", "recommendations"],
+  "required": ["building_id", "stage", "recommendations"],
   "properties": {
-    "site_id": {"type": "string"},
+    "building_id": {"type": "string"},
+    "site_id": {"type": ["string", "null"], "description": "Optional parent site identifier; never substitutes for building_id."},
     "stage": {"const": "RECOMMENDED"},
+    "agent_version": {"type": "string"},
+    "model_metadata": {"type": "object"},
+    "rule_versions": {"type": "array", "items": {"type": "string"}},
     "recommendations": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["work_package_id", "recommended_action", "rationale"],
+        "required": ["recommendation_id", "work_package_id", "recommended_action", "rationale", "human_review_required"],
         "properties": {
+          "recommendation_id": {"type": "string"},
           "work_package_id": {"type": "string"},
           "recommended_action": {"type": "string"},
           "timing": {"type": ["string", "null"]},
           "rationale": {"type": "string"},
-          "risks": {"type": "array", "items": {"type": "string"}},
+          "dependencies": {"type": "array", "items": {"type": "string"}},
           "constraints": {"type": "array", "items": {"type": "string"}},
+          "risks": {"type": "array", "items": {"type": "string"}},
           "alternatives": {"type": "array", "items": {"type": "string"}},
+          "assumptions": {"type": "array", "items": {"type": "string"}},
+          "exceptions": {"type": "array", "items": {"type": "string"}},
+          "evidence_lineage": {"type": "array", "items": {"type": "string"}},
           "human_review_required": {"type": "boolean"}
         },
         "additionalProperties": true
       }
-    }
+    },
+    "stage_exceptions": {"type": "array", "items": {"type": "string"}}
   },
   "additionalProperties": true
 }

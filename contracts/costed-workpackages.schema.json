@@ -3,11 +3,14 @@
   "$id": "costed-workpackages.schema.json",
   "title": "Costed Work Packages",
   "type": "object",
-  "required": ["site_id", "stage", "work_packages"],
+  "required": ["building_id", "stage", "work_packages"],
   "properties": {
-    "site_id": {"type": "string"},
+    "building_id": {"type": "string"},
+    "site_id": {"type": ["string", "null"], "description": "Optional parent site identifier; never substitutes for building_id."},
     "stage": {"const": "COSTED"},
     "cost_basis": {"type": "object"},
+    "calculation_date": {"type": ["string", "null"]},
+    "calculation_rule_versions": {"type": "array", "items": {"type": "string"}},
     "work_packages": {
       "type": "array",
       "items": {
@@ -16,16 +19,22 @@
         "properties": {
           "work_package_id": {"type": "string"},
           "direct_cost": {"type": "number", "minimum": 0},
+          "base_cost_date": {"type": ["string", "null"]},
           "indexation_factor": {"type": "number", "exclusiveMinimum": 0},
+          "index_reference": {"type": ["string", "null"]},
           "indexed_direct_cost": {"type": "number", "minimum": 0},
           "indirect_cost": {"type": "number", "minimum": 0},
+          "indirect_costs": {"type": "array", "items": {"type": "object"}},
           "contingency": {"type": "number", "minimum": 0},
           "total_cost": {"type": "number", "minimum": 0},
-          "calculation_trace": {"type": "array", "items": {"type": "string"}}
+          "calculation_trace": {"type": "array", "items": {"type": "string"}},
+          "assumptions": {"type": "array", "items": {"type": "string"}},
+          "exceptions": {"type": "array", "items": {"type": "string"}}
         },
         "additionalProperties": true
       }
-    }
+    },
+    "stage_exceptions": {"type": "array", "items": {"type": "string"}}
   },
   "additionalProperties": true
 }

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review-feedback.schema.json",
+  "title": "Structured Review Feedback",
+  "type": "object",
+  "required": ["feedback_id", "building_id", "source_review_id", "source_artifact_version", "reviewer_id", "feedback_status", "work_package_feedback"],
+  "properties": {
+    "feedback_id": {"type": "string"},
+    "building_id": {"type": "string"},
+    "pipeline_run_id": {"type": ["string", "null"]},
+    "source_review_id": {"type": "string"},
+    "source_artifact_version": {"type": ["string", "null"]},
+    "reviewer_id": {"type": "string"},
+    "review_completed_at": {"type": ["string", "null"]},
+    "feedback_status": {"enum": ["NO_REVISION_REQUIRED", "REVISION_REQUIRED", "PARTIAL_REVISION_REQUIRED", "HUMAN_ESCALATION_REQUIRED"]},
+    "overall_comment": {"type": ["string", "null"]},
+    "work_package_feedback": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["work_package_id", "decision", "requested_actions"],
+        "properties": {
+          "work_package_id": {"type": "string"},
+          "decision": {"enum": ["APPROVE", "APPROVE_WITH_CHANGES", "RETURN_FOR_REVISION", "DEFER", "REJECT"]},
+          "reviewer_comment": {"type": ["string", "null"]},
+          "scope_change_requested": {"type": "boolean"},
+          "cost_review_required": {"type": "boolean"},
+          "timing_review_required": {"type": "boolean"},
+          "risk_review_required": {"type": "boolean"},
+          "requested_actions": {"type": "array", "items": {"type": "string"}},
+          "authoritative_fact_change_requested": {"type": "boolean"},
+          "requires_source_update": {"type": "boolean"},
+          "requires_human_escalation": {"type": "boolean"}
+        }
+      }
+    },
+    "agent_revision_constraints": {
+      "type": "object",
+      "properties": {
+        "preserve_source_facts": {"const": true},
+        "preserve_original_work_package_ids": {"type": "boolean"},
+        "allow_new_work_package_version": {"type": "boolean"},
+        "prohibit_silent_scope_change": {"const": true},
+        "prohibit_silent_cost_change": {"const": true}
+      }
+    }
+  }
+}

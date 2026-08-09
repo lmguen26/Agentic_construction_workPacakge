@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "data-onboarding-inventory.schema.json",
+  "title": "Real Data Onboarding Inventory",
+  "type": "object",
+  "required": ["onboarding_version", "domains"],
+  "properties": {
+    "onboarding_version": {"type": "string"},
+    "created_at": {"type": ["string", "null"]},
+    "updated_at": {"type": ["string", "null"]},
+    "pilot_building_id": {"type": ["string", "null"]},
+    "pilot_site_context_confirmed": {"type": "boolean", "default": false},
+    "domains": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"],
+        "properties": {
+          "status": {
+            "enum": [
+              "NOT_REVIEWED",
+              "SOURCE_IDENTIFIED",
+              "STRUCTURE_INSPECTED",
+              "MAPPING_PROPOSED",
+              "IN_REVIEW",
+              "MAPPED",
+              "NOT_AVAILABLE",
+              "NOT_APPLICABLE",
+              "BLOCKED"
+            ]
+          },
+          "source_location": {"type": ["string", "null"]},
+          "source_object": {"type": ["string", "null"]},
+          "mapping_file": {"type": ["string", "null"]},
+          "crosswalk_files": {"type": "array", "items": {"type": "string"}},
+          "open_questions": {"type": "array", "items": {"type": "string"}},
+          "approved_by": {"type": ["string", "null"]},
+          "approved_at": {"type": ["string", "null"]},
+          "notes": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

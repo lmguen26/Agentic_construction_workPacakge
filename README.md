@@ -1,83 +1,244 @@
 # Agentic Construction Work Package
 
-Synthetic reference architecture for a human-in-the-loop workflow that transforms building-condition data into normalized opportunities, clusters, work packages, costed work packages, recommendations, summaries, and a site-level HTML building sheet.
+Synthetic reference architecture for a configurable, human-in-the-loop, **building-level analysis workflow within a Region -> Branch -> Site hierarchy**. The solution transforms validated building information into normalized opportunities, clusters, work packages, costed work packages, recommendations, executive summaries, reviewable HTML SPAs, and structured revision feedback.
 
-> Do not commit employer-confidential data, production prompts, pricing tables, credentials, or real datasets to this public repository.
+> Do not commit confidential operational data, production prompts, pricing tables, credentials, or real datasets to this public repository.
 
-## Workflow
+## Start here
+
+**Canonical source of truth:** [`docs/CANONICAL-CONVENTIONS.md`](docs/CANONICAL-CONVENTIONS.md). Use it when older examples or historical V0.1/V0.2 material conflicts with the current architecture.
+
+**New to the methodology?** Read [`docs/MASTERCLASS-COOKBOOK.md`](docs/MASTERCLASS-COOKBOOK.md).
+
+**Deploying with real work data?** Read [`docs/COPILOT-WORK-ONBOARDING.md`](docs/COPILOT-WORK-ONBOARDING.md), [`docs/identity-and-occupancy-model.md`](docs/identity-and-occupancy-model.md), and [`docs/model-selection-guide.md`](docs/model-selection-guide.md).
+
+**Running the configured pipeline?** Read [`docs/ORCHESTRATION-RUNTIME.md`](docs/ORCHESTRATION-RUNTIME.md).
+
+## Product objective
+
+The repository supports repeatable analysis of physical buildings/premises **individually**, producing reviewed and traceable building-level work-package information products. A user may select many buildings at once, but the batch is an operational convenience: each building receives an independent manifest, run, SPA, review and revision history.
+
+The repository intentionally stops short of portfolio optimization. A future portfolio/scenario solution can consume approved building-level work-package information products downstream.
+
+## Identity model in one sentence
+
+`Region -> Branch -> Site -> Building` is the selection hierarchy, while `Transit/Service Point <-> Temporal Occupancy <-> Building/Premises <-> Lease where applicable` is the business-occupancy relationship.
+
+A transit can move over time; it is never a substitute for `building_id` or `site_id`. A site may also contain owned and leased portions simultaneously.
+
+## Core workflow
 
 ```text
-Source data (Excel / JSON / CSV)
+Operational source data
         |
         v
-[V] Deterministic Site Validator
+Agent M guided onboarding / mappings / crosswalks when connecting real data
         |
         v
-[A] Deficiency -> Opportunity normalization
+Canonical Data Model
         |
         v
-[B] SALVO-inspired clustering / bundling / blending
+Deterministic Data Quality Gate
         |
         v
-[C] Cost indexation + indirect costs
+Canonical site_context.json for one building_id
         |
         v
-[T] Work recommendations / strategy
+Configurable analysis_manifest.json
         |
         v
-[E] Executive synthesis
+Python orchestration control plane
+        |
+        +-> [A] Opportunity normalization
+        +-> [B] SALVO-inspired clustering / bundling / blending
+        +-> [C] Deterministic costing + bounded interpretation
+        +-> [T] Building/site strategic recommendation
+        +-> [E] Executive synthesis
         |
         v
-Structured site artifact -> HTML SPA building sheet
+Versioned HTML SPA building datasheet
+        |
+        v
+Human review + embedded review metadata
+        |
+        v
+Structured review feedback
+        |
+        v
+[R] Controlled revision / routing
+        |
+        v
+New SPA version / further review
 ```
 
-## Core principle
+## Analysis profiles
 
-Every stage consumes a structured input artifact and produces a structured output artifact. LLM agents interpret bounded data; deterministic code performs validations and calculations that should not depend on model judgment.
+- **Level 0 — Validation only:** deterministic source readiness and site-context generation.
+- **Level 1 — Work Package Analysis:** core A-B-C-T-E pipeline.
+- **Level 2 — Strategic Site Analysis:** adds lease/occupancy, detention horizon, initiatives/projects, accessibility, lifecycle, risk, FCI/replacement value and strategic context when available.
+- **Level 3 — Advanced Investment Analysis:** adds cost sensitivity, amortization, alternatives and timing analysis.
+- **Custom:** user-selected capability combination.
+
+Analysis effort is a separate dimension: `RAPID`, `STANDARD`, or `THOROUGH`.
+
+## Model selection
+
+The methodology is model-agnostic, but the default task routing is:
+
+- **Claude Opus / strongest available reasoning model:** semantic onboarding, Agent M, architecture comprehension, difficult identity/occupancy mapping, and early B/T validation.
+- **Codex / strongest available coding model:** adapters, deterministic validators, schemas, tests, orchestration, debugging and refactoring.
+- **Gemini / different model family:** independent challenge, second opinion and adversarial review.
+- **Deterministic Python:** authoritative calculations and validation whenever practical, particularly costing arithmetic.
+
+See `docs/model-selection-guide.md`. Actual model used should be recorded in run metadata; agents should not be permanently bound to one vendor/model.
+
+## Python setup
+
+After cloning:
+
+```bash
+python -m pip install -r requirements.txt
+python -m pytest -q
+```
+
+`jsonschema` is used to prevent a Copilot stage artifact from advancing unless it conforms to the canonical contract.
+
+## Desktop application
+
+Run:
+
+```bash
+python app/main.py
+```
+
+The desktop application provides hierarchical multi-filter selection (`Region -> Branch -> Site -> Building`), multi-building batch scope, validation, site-context generation, HTML datasheet generation and access to the **Site Analysis Cockpit**.
+
+The cockpit can now:
+
+- create per-building `analysis_manifest.json` files;
+- prepare one independent pipeline run per building;
+- create exactly one `next_stage_request.json` for the valid next agent;
+- run a deterministic reference pipeline to test orchestration/contracts before live Copilot use.
+
+## Live Copilot orchestration
+
+A prepared run is written under:
+
+```text
+data/runs/<building_id>/<analysis_id>/
+```
+
+In VS Code Copilot use:
+
+```text
+/continue-pipeline-run run_dir=data/runs/<building_id>/<analysis_id>
+```
+
+Copilot executes only the requested specialist stage and writes the declared JSON artifact. Python then validates and advances it:
+
+```bash
+python scripts/run_pipeline.py advance data/runs/<building_id>/<analysis_id>
+```
+
+Repeat until `READY_TO_PUBLISH`, then:
+
+```bash
+python scripts/run_pipeline.py publish data/runs/<building_id>/<analysis_id>
+```
+
+The governing runtime rule is: **the LLM proposes one bounded transformation; Python controls whether the pipeline is allowed to proceed.**
+
+## Core principles
+
+1. Deterministic checks and calculations remain deterministic whenever practical.
+2. Operational source schemas are normalized through mappings into a stable canonical model.
+3. Physical identity, site identity, transit/service-point identity, tenure and time remain distinct dimensions.
+4. Every agent has bounded stage ownership.
+5. Every transformation preserves source lineage.
+6. Human review is captured as structured metadata inside the SPA.
+7. Reviewer feedback can trigger revision but cannot silently overwrite authoritative source facts.
+8. Reviewed and revised artifacts are versioned rather than overwritten.
+9. Analysis depth is configurable without creating separate incompatible pipelines.
+10. Building-level evidence and review controls remain separate from future portfolio optimization.
+11. Model choice is task-dependent and recorded; methodology remains model-independent.
+12. Current A/B/C/T/E contracts use required `building_id` and canonical `stage`; legacy `site_id-as-building` and `pipeline_state` conventions are deprecated.
+13. A custom analysis configuration cannot bypass required upstream A/B/C/T/E dependencies.
+14. One pipeline run always belongs to one building, even when runs are prepared in batches.
 
 ## Repository layout
 
 ```text
 .github/
-  copilot-instructions.md
   agents/
-    orchestrator.agent.md
-    agent-a-opportunity.agent.md
-    agent-b-workpackage.agent.md
-    agent-c-cost.agent.md
-    agent-t-strategy.agent.md
-    agent-e-summary.agent.md
   prompts/
+
+app/
+  main.py
+  cockpit.py
+  selection_panel.py
+
 contracts/
+profiles/
+mappings/
+crosswalks/
 rules/
+
 src/
-  validator/
+  capabilities/
+  context/
+  costing/
+  evaluation/
   orchestration/
+  quality/
+  review/
+  selection/
   spa/
+  validator/
+
+scripts/
+  run_pipeline.py
+
+spa_exchange/
+  generated/
+  under_review/
+  reviewed/
+  extracted/
+  revised/
+  archived/
+
 examples/
 tests/
+docs/
 ```
 
-## Pipeline states
+## Versioned SPA lifecycle
 
-`INGESTED -> VALIDATED -> OPPORTUNITIES -> CLUSTERED -> COSTED -> RECOMMENDED -> SUMMARIZED -> PUBLISHED`
+```text
+generated -> under_review -> reviewed -> extracted -> revised -> archived
+```
 
-Validation failure produces `BLOCKED`; downstream agents must not infer missing source data.
+Reviewed SPAs embed both the canonical site context and review metadata. The review extractor converts this into structured feedback for Agent R. Prior reviewed versions are preserved.
 
-## VS Code / GitHub Copilot
+## Key documentation
 
-The `.github/agents` files define specialized custom agents. The orchestrator coordinates the sequence and exposes handoffs to the next stage. `.github/prompts` can hold reusable entry-point tasks. Business rules should live under `/rules` rather than being buried only in prompts.
+- `docs/CANONICAL-CONVENTIONS.md` — normative current naming and architectural conventions.
+- `docs/MASTERCLASS-COOKBOOK.md` — complete narrative learning and operating guide.
+- `docs/COPILOT-WORK-ONBOARDING.md` — guided deployment and real-data onboarding protocol for GitHub Copilot.
+- `docs/ORCHESTRATION-RUNTIME.md` — executable Python/Copilot stage-control workflow.
+- `docs/identity-and-occupancy-model.md` — transit/site/building/occupancy/mixed-tenure identity model.
+- `docs/model-selection-guide.md` — task-based model routing and reminder strategy.
+- `docs/information-model-v0.2.md` — detailed information model, refreshed to the current canonical view while retaining its historical filename.
+- `docs/evolution-and-objectives.md` — why the solution evolved and what it is intended to do.
+- `docs/pipeline-workflow.md` — Mermaid view of the end-to-end pipeline and revision loop.
+- `docs/source-integration-architecture.md` — source-to-canonical mapping and integration approach.
+- `docs/selection-hierarchy.md` — Region/Branch/Site/Building selection hierarchy and its distinction from occupancy relationships.
+- `docs/v0.3-agent-a-live-test.md` — first live Copilot Agent A validation approach.
+- `spa_exchange/README.md` — versioned SPA lifecycle and processing conventions.
 
-## Recommended production split
+## Production integration principle
 
-- Python / Excel / JSON: source validation, joins, schema validation, deterministic formulas, cost calculations, pipeline state.
-- Copilot agents: normalization, bounded interpretation, clustering rationale, strategic recommendations, summaries.
-- Human: review, exceptions, approval, release.
+Real operational data should remain outside source control. The repository should hold schemas, mapping templates, crosswalk definitions, business rules, agents, prompts, validation code, tests and synthetic fixtures. Local or approved enterprise data can feed the same canonical contracts without changing downstream agents.
 
-## Next implementation steps
+## Future boundary
 
-1. Add sanitized JSON Schemas for every handoff.
-2. Add the 8-9 source-presence rules to the deterministic validator.
-3. Replace the synthetic agent instructions with sanitized versions of production prompts.
-4. Add versioned quantitative business rules under `/rules`.
-5. Connect the final structured artifact to the Python/Tkinter HTML SPA generator.
+A downstream portfolio planning/optimization solution may consume approved building-level work packages to add portfolio scenarios, annual CAPEX constraints, project/delivery capacity, constrained scheduling and multi-year investment planning. Those capabilities are intentionally outside the current building-analysis product boundary.

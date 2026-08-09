@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run-state.schema.json",
+  "title": "Building Pipeline Runtime State",
+  "type": "object",
+  "required": [
+    "run_id",
+    "analysis_id",
+    "building_id",
+    "profile_id",
+    "effort",
+    "status",
+    "enabled_stages",
+    "completed_stages",
+    "stage_validation",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "analysis_id": {"type": "string"},
+    "building_id": {"type": "string"},
+    "profile_id": {"type": "string"},
+    "effort": {"enum": ["RAPID", "STANDARD", "THOROUGH"]},
+    "status": {
+      "enum": [
+        "PREPARED",
+        "WAITING_FOR_AGENT",
+        "STAGE_VALIDATION_FAILED",
+        "READY_TO_PUBLISH",
+        "SPA_GENERATED",
+        "COMPLETED",
+        "BLOCKED",
+        "CONFIGURATION_INVALID"
+      ]
+    },
+    "configuration_errors": {"type": "array", "items": {"type": "string"}},
+    "data_quality_status": {"enum": ["VALIDATED", "REVIEW_REQUIRED", "BLOCKED"]},
+    "enabled_stages": {"type": "array", "items": {"enum": ["A", "B", "C", "T", "E"]}},
+    "last_completed_stage": {"type": ["string", "null"]},
+    "waiting_for_stage": {"type": ["string", "null"]},
+    "completed_stages": {"type": "array", "items": {"enum": ["A", "B", "C", "T", "E"]}},
+    "stage_validation": {"type": "object"},
+    "created_at": {"type": "string"},
+    "updated_at": {"type": "string"},
+    "spa_path": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}

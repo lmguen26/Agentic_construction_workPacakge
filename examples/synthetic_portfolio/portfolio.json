@@ -1,9 +1,23 @@
 {
-  "note": "Entirely fictional Quebec credit-union-style portfolio for architecture testing. No real organization, address, building or project data.",
+  "note": "Entirely fictional portfolio for architecture testing. No real organization, address, building or project data.",
+  "regions": [
+    {"region_id":"REG-EST","region_name":"Region Est"},
+    {"region_id":"REG-CENTRE","region_name":"Region Centre"}
+  ],
+  "branches": [
+    {"branch_id":"BR-LEVIS","branch_name":"Branche Levis","region_id":"REG-EST"},
+    {"branch_id":"BR-QUEBEC","branch_name":"Branche Quebec","region_id":"REG-EST"},
+    {"branch_id":"BR-MAURICIE","branch_name":"Branche Mauricie","region_id":"REG-CENTRE"}
+  ],
+  "sites": [
+    {"site_id":"SITE-001","site_name":"Centre-Riviere","branch_id":"BR-LEVIS","region_id":"REG-EST"},
+    {"site_id":"SITE-002","site_name":"Quartier-du-Lac","branch_id":"BR-QUEBEC","region_id":"REG-EST"},
+    {"site_id":"SITE-003","site_name":"Carrefour-Nord","branch_id":"BR-MAURICIE","region_id":"REG-CENTRE"}
+  ],
   "buildings": [
-    {"building_id":"BLDG-001","building_name":"Caisse Exemple - Centre-Riviere","address":"100 rue Exemple","municipality":"Levis","province":"QC","postal_code":"G0X 0X0","ownership_type":"owned","construction_year":1988,"gross_area_sqft":18500,"number_of_floors":2,"replacement_cost_per_sqft":400,"calculated_replacement_value":7400000,"flood_risk_rating":"low","portfolio_status":"active"},
-    {"building_id":"BLDG-002","building_name":"Caisse Exemple - Quartier-du-Lac","address":"250 avenue Exemple","municipality":"Quebec","province":"QC","postal_code":"G0X 0X0","ownership_type":"leased","construction_year":2004,"gross_area_sqft":9200,"number_of_floors":1,"replacement_cost_per_sqft":400,"calculated_replacement_value":3680000,"flood_risk_rating":"medium","portfolio_status":"active"},
-    {"building_id":"BLDG-003","building_name":"Caisse Exemple - Carrefour-Nord","address":"800 boulevard Exemple","municipality":"Trois-Rivieres","province":"QC","postal_code":"G0X 0X0","ownership_type":"mixed","construction_year":1976,"gross_area_sqft":26000,"number_of_floors":3,"replacement_cost_per_sqft":400,"calculated_replacement_value":10400000,"flood_risk_rating":"high","portfolio_status":"active"}
+    {"building_id":"BLDG-001","building_name":"Building Example - Centre-Riviere","region_id":"REG-EST","branch_id":"BR-LEVIS","site_id":"SITE-001","address":"100 rue Exemple","municipality":"Levis","province":"QC","postal_code":"G0X 0X0","ownership_type":"owned","construction_year":1988,"gross_area_sqft":18500,"number_of_floors":2,"replacement_cost_per_sqft":400,"calculated_replacement_value":7400000,"flood_risk_rating":"low","portfolio_status":"active"},
+    {"building_id":"BLDG-002","building_name":"Building Example - Quartier-du-Lac","region_id":"REG-EST","branch_id":"BR-QUEBEC","site_id":"SITE-002","address":"250 avenue Exemple","municipality":"Quebec","province":"QC","postal_code":"G0X 0X0","ownership_type":"leased","construction_year":2004,"gross_area_sqft":9200,"number_of_floors":1,"replacement_cost_per_sqft":400,"calculated_replacement_value":3680000,"flood_risk_rating":"medium","portfolio_status":"active"},
+    {"building_id":"BLDG-003","building_name":"Building Example - Carrefour-Nord","region_id":"REG-CENTRE","branch_id":"BR-MAURICIE","site_id":"SITE-003","address":"800 boulevard Exemple","municipality":"Trois-Rivieres","province":"QC","postal_code":"G0X 0X0","ownership_type":"mixed","construction_year":1976,"gross_area_sqft":26000,"number_of_floors":3,"replacement_cost_per_sqft":400,"calculated_replacement_value":10400000,"flood_risk_rating":"high","portfolio_status":"active"}
   ],
   "service_points": [
     {"service_point_id":"SP-001","service_point_name":"Centre-Riviere Services","business_entity_type":"retail_financial_services"},
@@ -49,6 +63,7 @@
     {"strategy_record_id":"STRAT-002","building_id":"BLDG-002","detention_horizon_years":3,"ownership_strategy":"lease_decision_required","strategic_importance":"medium","investment_posture":"limit_major_capital_until_lease_decision","fci":null,"bfi":null,"amortization_percent":null,"strategy_version":"synthetic-0.2"},
     {"strategy_record_id":"STRAT-003","building_id":"BLDG-003","detention_horizon_years":4,"ownership_strategy":"study_consolidation","strategic_importance":"medium","investment_posture":"coordinate_with_consolidation_study","fci":0.19,"bfi":null,"amortization_percent":0.84,"strategy_version":"synthetic-0.2"}
   ],
+  "strategic_context": [],
   "risks": [
     {"risk_id":"RISK-001","building_id":"BLDG-003","risk_type":"flood","risk_category":"physical","probability":"medium","impact":"high","risk_score":"high","compliance_status":"review_required"}
   ],
@@ -56,5 +71,5 @@
   "maintenance_history": [],
   "space_utilization": [],
   "spatial_references": [],
-  "source_lineage": [{"source":"synthetic_portfolio","version":"0.2","classification":"fictional_reference_data"}]
+  "source_lineage": [{"source":"synthetic_portfolio","version":"0.3-hierarchy","classification":"fictional_reference_data"}]
 }

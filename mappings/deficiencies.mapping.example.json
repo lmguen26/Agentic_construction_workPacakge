@@ -1,0 +1,20 @@
+{
+  "description": "Synthetic mapping example. Replace source field names locally with approved operational schema names.",
+  "source": "deficiencies",
+  "mapping_version": "0.1-example",
+  "fields": {
+    "ID_Def": {"canonical": "deficiency_id", "required": true, "transformation": "direct"},
+    "ID_Immeuble": {"canonical": "building_id", "required": true, "transformation": "building_id_crosswalk"},
+    "Titre_Def": {"canonical": "title", "required": true, "transformation": "direct"},
+    "Code_Uni": {"canonical": "uniformat_code", "required": false, "transformation": "validate_uniformat"},
+    "Type_Action": {"canonical": "action_type", "required": false, "transformation": "action_type_crosswalk"},
+    "Qte": {"canonical": "quantity", "required": false, "canonical_type": "number"},
+    "Unite": {"canonical": "unit_of_measure", "required": false, "transformation": "unit_crosswalk"},
+    "Cout_Unitaire": {"canonical": "unit_cost", "required": false, "canonical_type": "number"},
+    "Cout_Total": {"canonical": "source_total_cost", "required": false, "canonical_type": "number"},
+    "Observation": {"canonical": "observation", "required": false, "transformation": "direct"},
+    "Correctif": {"canonical": "proposed_corrective_action", "required": false, "transformation": "direct"},
+    "Horizon": {"canonical": "intervention_horizon", "required": false, "transformation": "intervention_horizon_crosswalk"},
+    "Etat": {"canonical": "condition_rating", "required": false, "transformation": "condition_rating_crosswalk"}
+  }
+}

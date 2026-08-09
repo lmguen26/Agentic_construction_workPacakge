@@ -1,0 +1,26 @@
+{
+  "profile_id": "LEVEL_1_WORK_PACKAGES",
+  "label": "Work Package Analysis",
+  "description": "Run the core A-B-C-T-E pipeline to create traceable recommended work packages and a reviewable building datasheet.",
+  "default_effort": "STANDARD",
+  "modules": {
+    "data_quality": true,
+    "site_context": true,
+    "opportunity_normalization": true,
+    "bundling_blending": true,
+    "costing": true,
+    "recommendation": true,
+    "executive_summary": true,
+    "accessibility": false,
+    "component_lifecycle": false,
+    "lease_strategy": false,
+    "existing_projects_initiatives": true,
+    "strategic_context": false,
+    "risk_compliance": false,
+    "fci_replacement_value": false,
+    "cost_sensitivity": false,
+    "amortization": false,
+    "alternative_work_packages": false,
+    "timing_alternatives": false
+  }
+}
