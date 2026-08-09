@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import json
+import sys
 import webbrowser
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from app.cockpit import open_cockpit
 from app.selection_panel import HierarchicalSelectionPanel
@@ -12,7 +17,6 @@ from src.context.site_context_builder import build_site_context
 from src.quality.data_quality_gate import evaluate_site
 from src.spa.building_datasheet import render_building_datasheet
 
-ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PORTFOLIO = ROOT / "examples" / "synthetic_portfolio" / "portfolio.json"
 OUTPUT_DIR = ROOT / "data" / "outputs"
 
