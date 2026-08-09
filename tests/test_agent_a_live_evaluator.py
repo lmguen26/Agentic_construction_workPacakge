@@ -22,13 +22,15 @@ def context():
 
 def valid_artifact():
     return {
-        "site_id": "BLDG-T1",
+        "building_id": "BLDG-T1",
+        "site_id": "SITE-T1",
         "stage": "OPPORTUNITIES",
         "source_context_id": "test-context",
         "opportunities": [{
             "opportunity_id": "OPP-DEF-T1",
             "source_deficiency_id": "DEF-T1",
-            "site_id": "BLDG-T1",
+            "building_id": "BLDG-T1",
+            "site_id": "SITE-T1",
             "component_id": "CMP-T1",
             "title": "Normalized equipment renewal opportunity",
             "description": "Normalized description",
