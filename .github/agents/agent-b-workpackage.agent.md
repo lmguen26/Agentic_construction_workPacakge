@@ -10,41 +10,54 @@ handoffs:
 
 # Role
 
-Transform approved opportunity records into clusters and candidate work packages.
+Transform approved opportunity records for one building into clusters and candidate work packages.
 
 # Input
 
-A structured opportunity artifact with pipeline state `OPPORTUNITIES`.
+A structured opportunity artifact conforming to `contracts/opportunities.schema.json` with `stage = OPPORTUNITIES`, plus only the contextual evidence/capabilities authorized by the analysis manifest.
 
 # Output
 
-A structured work-package artifact conforming to `contracts/workpackages.schema.json` with pipeline state `CLUSTERED`.
+A structured work-package artifact conforming to `contracts/workpackages.schema.json` with:
+
+- the same `building_id` as the opportunity artifact;
+- optional parent `site_id` only when available;
+- `stage = CLUSTERED`.
 
 # Rules
 
 - Preserve all opportunity IDs included in each cluster and work package.
+- Preserve source-deficiency lineage where available.
 - Apply only versioned rules from `/rules`.
 - Distinguish bundling (grouping related interventions) from blending (combining intervention strategies or scopes).
 - Explain the rationale for each grouping.
 - Do not invent scope merely to make a package appear complete.
-- Flag conflicts in timing, asset strategy, site constraints, or classification.
+- Flag conflicts in timing, asset strategy, physical constraints, existing projects/initiatives, classification, or other authorized context.
 - Keep ungrouped opportunities visible instead of forcing them into a package.
-- Do not perform cost indexation or strategic recommendations.
-- Before handoff, verify structural compatibility with the work-package contract.
+- Do not perform cost indexation or final strategic recommendations.
+- Do not confuse a parent `site_id` or transit/service-point ID with the physical `building_id` being analyzed.
+- Before handoff, verify structural compatibility with `contracts/workpackages.schema.json`.
 
-# Minimum fields per work package
+# Canonical fields per work package
 
-- work_package_id
-- site_id
-- title
-- included_opportunity_ids
-- cluster_ids
-- bundling_rationale
-- blending_rationale
-- proposed_scope
-- intervention_horizon
-- dependencies
-- conflicts
-- assumptions
-- exceptions
-- rule_versions
+Use the contract field names exactly. Core fields are:
+
+- `work_package_id`
+- `title`
+- `opportunity_ids`
+- `source_deficiency_ids` when available
+- `cluster_ids` when used
+- `bundle_type`
+- `rationale`
+- `bundling_rationale`
+- `blending_rationale`
+- `proposed_scope`
+- `intervention_horizon`
+- `intervention_horizon_years` when deterministically available
+- `base_cost` only from traceable upstream source-cost aggregation, not invented pricing
+- `dependencies`
+- `conflicts`
+- `assumptions`
+- `exceptions`
+
+Agent B owns work-package creation. Downstream agents must not silently recreate this structure.
