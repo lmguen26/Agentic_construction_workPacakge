@@ -1,83 +1,172 @@
 # Agentic Construction Work Package
 
-Synthetic reference architecture for a human-in-the-loop workflow that transforms building-condition data into normalized opportunities, clusters, work packages, costed work packages, recommendations, summaries, and a site-level HTML building sheet.
+Synthetic reference architecture for a configurable, human-in-the-loop, site-centric investment-planning workflow. The solution transforms validated building information into normalized opportunities, clusters, work packages, costed work packages, recommendations, executive summaries, reviewable HTML SPAs, and structured revision feedback.
 
-> Do not commit employer-confidential data, production prompts, pricing tables, credentials, or real datasets to this public repository.
+> Do not commit confidential operational data, production prompts, pricing tables, credentials, or real datasets to this public repository.
 
-## Workflow
+## Product objective
+
+The repository is designed to support repeatable analysis of buildings **individually**, producing reviewed and traceable site-level work packages. It intentionally stops short of portfolio optimization. A future portfolio/scenario solution can consume approved work-package information products downstream.
+
+The analysis is now configurable: users can choose validation-only, baseline work-package analysis, strategic site analysis, advanced investment analysis, or a custom module combination. Every configured run is represented by an `analysis_manifest.json`.
+
+## Core workflow
 
 ```text
-Source data (Excel / JSON / CSV)
+Operational source data
         |
         v
-[V] Deterministic Site Validator
+Mappings / Crosswalks
         |
         v
-[A] Deficiency -> Opportunity normalization
+Canonical Data Model
+        |
+        v
+Deterministic Data Quality Gate
+        |
+        v
+Canonical site_context.json
+        |
+        v
+Configurable Analysis Manifest
+        |
+        v
+[A] Opportunity normalization
         |
         v
 [B] SALVO-inspired clustering / bundling / blending
         |
         v
-[C] Cost indexation + indirect costs
+[C] Deterministic costing + bounded interpretation
         |
         v
-[T] Work recommendations / strategy
+[T] Site work recommendations / strategy
         |
         v
 [E] Executive synthesis
         |
         v
-Structured site artifact -> HTML SPA building sheet
+Versioned HTML SPA building datasheet
+        |
+        v
+Human review + embedded review metadata
+        |
+        v
+Structured review feedback
+        |
+        v
+[R] Revision agent
+        |
+        v
+New SPA version / further review
 ```
 
-## Core principle
+## Analysis profiles
 
-Every stage consumes a structured input artifact and produces a structured output artifact. LLM agents interpret bounded data; deterministic code performs validations and calculations that should not depend on model judgment.
+- **Level 0 — Validation only:** deterministic source readiness and site-context generation.
+- **Level 1 — Work Package Analysis:** core A-B-C-T-E pipeline.
+- **Level 2 — Strategic Site Analysis:** adds lease/occupancy, detention horizon, initiatives/projects, accessibility, lifecycle, risk, FCI/replacement value and strategic context when available.
+- **Level 3 — Advanced Investment Analysis:** adds cost sensitivity, amortization, alternatives and timing analysis.
+- **Custom:** user-selected capability combination.
+
+Analysis effort is a separate dimension: `RAPID`, `STANDARD`, or `THOROUGH`.
+
+## Desktop application
+
+Run:
+
+```bash
+python app/main.py
+```
+
+The main desktop application provides building selection, validation, site-context generation, HTML datasheet generation and access to the **Site Analysis Cockpit**.
+
+The cockpit produces a versioned `analysis_manifest.json` describing the requested depth, effort and enabled capabilities.
+
+## Core principles
+
+1. Deterministic checks and calculations remain deterministic whenever practical.
+2. Operational source schemas are normalized through mappings into a stable canonical model.
+3. Every agent has bounded stage ownership.
+4. Every transformation preserves source lineage.
+5. Human review is captured as structured metadata inside the SPA.
+6. Reviewer feedback can trigger revision but cannot silently overwrite authoritative source facts.
+7. Reviewed and revised artifacts are versioned rather than overwritten.
+8. Analysis depth is configurable without creating separate incompatible pipelines.
+9. Site-level evidence and review controls remain separate from future portfolio optimization.
 
 ## Repository layout
 
 ```text
 .github/
-  copilot-instructions.md
   agents/
-    orchestrator.agent.md
-    agent-a-opportunity.agent.md
-    agent-b-workpackage.agent.md
-    agent-c-cost.agent.md
-    agent-t-strategy.agent.md
-    agent-e-summary.agent.md
   prompts/
+
+app/
+  main.py
+  cockpit.py
+
 contracts/
+  analysis-manifest.schema.json
+  site-context.schema.json
+  review-record.schema.json
+  review-feedback.schema.json
+  ...
+
+profiles/
+  level-0-validation.json
+  level-1-work-packages.json
+  level-2-strategic.json
+  level-3-advanced.json
+
+mappings/
+crosswalks/
 rules/
+
 src/
-  validator/
+  capabilities/
+  context/
+  costing/
+  evaluation/
   orchestration/
+  quality/
+  review/
   spa/
+  validator/
+
+spa_exchange/
+  generated/
+  under_review/
+  reviewed/
+  extracted/
+  revised/
+  archived/
+
 examples/
 tests/
+docs/
 ```
 
-## Pipeline states
+## Versioned SPA lifecycle
 
-`INGESTED -> VALIDATED -> OPPORTUNITIES -> CLUSTERED -> COSTED -> RECOMMENDED -> SUMMARIZED -> PUBLISHED`
+```text
+generated -> under_review -> reviewed -> extracted -> revised -> archived
+```
 
-Validation failure produces `BLOCKED`; downstream agents must not infer missing source data.
+Reviewed SPAs embed both the canonical site context and review metadata. The review extractor converts this into structured feedback for Agent R. Prior reviewed versions are preserved.
 
-## VS Code / GitHub Copilot
+## Key documentation
 
-The `.github/agents` files define specialized custom agents. The orchestrator coordinates the sequence and exposes handoffs to the next stage. `.github/prompts` can hold reusable entry-point tasks. Business rules should live under `/rules` rather than being buried only in prompts.
+- `docs/evolution-and-objectives.md` — why the solution evolved and what it is intended to do.
+- `docs/pipeline-workflow.md` — Mermaid view of the end-to-end pipeline and revision loop.
+- `docs/source-integration-architecture.md` — source-to-canonical mapping and integration approach.
+- `docs/v0.3-live-agent-a-testing.md` — first live Copilot Agent A validation approach.
+- `spa_exchange/README.md` — versioned SPA lifecycle and processing conventions.
 
-## Recommended production split
+## Production integration principle
 
-- Python / Excel / JSON: source validation, joins, schema validation, deterministic formulas, cost calculations, pipeline state.
-- Copilot agents: normalization, bounded interpretation, clustering rationale, strategic recommendations, summaries.
-- Human: review, exceptions, approval, release.
+Real operational data should remain outside source control. The repository should hold schemas, mappings, crosswalk definitions, business rules, agents, prompts, validation code, tests and synthetic fixtures. Local or approved enterprise data can feed the same canonical contracts without changing downstream agents.
 
-## Next implementation steps
+## Future boundary
 
-1. Add sanitized JSON Schemas for every handoff.
-2. Add the 8-9 source-presence rules to the deterministic validator.
-3. Replace the synthetic agent instructions with sanitized versions of production prompts.
-4. Add versioned quantitative business rules under `/rules`.
-5. Connect the final structured artifact to the Python/Tkinter HTML SPA generator.
+A downstream portfolio planning/optimization solution may consume approved site-level work packages to add portfolio scenarios, annual CAPEX constraints, project/delivery capacity, constrained scheduling and multi-year investment planning. Those capabilities are intentionally outside the current site-centric product boundary.
