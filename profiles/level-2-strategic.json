@@ -1,0 +1,26 @@
+{
+  "profile_id": "LEVEL_2_STRATEGIC",
+  "label": "Strategic Site Analysis",
+  "description": "Run the core work-package pipeline and enrich recommendations with site strategy, detention horizon, occupancy/lease, initiatives, accessibility, component lifecycle, FCI/replacement-value and available strategic context.",
+  "default_effort": "STANDARD",
+  "modules": {
+    "data_quality": true,
+    "site_context": true,
+    "opportunity_normalization": true,
+    "bundling_blending": true,
+    "costing": true,
+    "recommendation": true,
+    "executive_summary": true,
+    "accessibility": true,
+    "component_lifecycle": true,
+    "lease_strategy": true,
+    "existing_projects_initiatives": true,
+    "strategic_context": true,
+    "risk_compliance": true,
+    "fci_replacement_value": true,
+    "cost_sensitivity": false,
+    "amortization": false,
+    "alternative_work_packages": false,
+    "timing_alternatives": false
+  }
+}
