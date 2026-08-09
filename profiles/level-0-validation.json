@@ -1,0 +1,26 @@
+{
+  "profile_id": "LEVEL_0_VALIDATION",
+  "label": "Validation only",
+  "description": "Validate source readiness and generate the canonical site context without creating work packages.",
+  "default_effort": "RAPID",
+  "modules": {
+    "data_quality": true,
+    "site_context": true,
+    "opportunity_normalization": false,
+    "bundling_blending": false,
+    "costing": false,
+    "recommendation": false,
+    "executive_summary": false,
+    "accessibility": false,
+    "component_lifecycle": false,
+    "lease_strategy": false,
+    "existing_projects_initiatives": false,
+    "strategic_context": false,
+    "risk_compliance": false,
+    "fci_replacement_value": false,
+    "cost_sensitivity": false,
+    "amortization": false,
+    "alternative_work_packages": false,
+    "timing_alternatives": false
+  }
+}
