@@ -11,10 +11,19 @@ from pathlib import Path
 from typing import Any
 
 from src.context.site_context_builder import build_site_context
+from src.quality.data_quality_gate import evaluate_site
 
 
 def _source_ref(context: dict[str, Any]) -> list[str]:
     return [d["deficiency_id"] for d in context.get("deficiencies", []) if d.get("deficiency_id")]
+
+
+def build_validated_context(portfolio: dict[str, Any], building_id: str) -> dict[str, Any]:
+    context = build_site_context(portfolio, building_id)
+    gate = evaluate_site(portfolio, building_id)
+    context["data_quality"]["status"] = gate["gate_status"]
+    context["data_quality"]["source_results"] = gate["results"]
+    return context
 
 
 def build_reference_artifacts(context: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -128,11 +137,17 @@ def materialize(archetypes_file: Path, output_dir: Path) -> None:
         building_id = item["building_id"]
         site_dir = output_dir / building_id
         site_dir.mkdir(parents=True, exist_ok=True)
-        context = build_site_context(portfolio, building_id)
+        context = build_validated_context(portfolio, building_id)
         (site_dir / "site_context.json").write_text(json.dumps(context, indent=2), encoding="utf-8")
         artifacts = build_reference_artifacts(context)
         for stage, artifact in artifacts.items():
             (site_dir / f"stage_{stage}.json").write_text(json.dumps(artifact, indent=2), encoding="utf-8")
+        (site_dir / "run_status.json").write_text(json.dumps({
+            "building_id": building_id,
+            "data_quality_status": context["data_quality"]["status"],
+            "stages_generated": list(artifacts.keys()),
+            "blocked_before_agent_a": not bool(artifacts),
+        }, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":
