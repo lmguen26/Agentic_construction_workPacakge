@@ -9,7 +9,8 @@ Before major architecture, onboarding, mapping or orchestration work, read:
 1. `docs/CANONICAL-CONVENTIONS.md`
 2. `docs/identity-and-occupancy-model.md`
 3. `docs/MASTERCLASS-COOKBOOK.md`
-4. `docs/model-selection-guide.md`
+4. `docs/ORCHESTRATION-RUNTIME.md`
+5. `docs/model-selection-guide.md`
 
 When older examples conflict with current contracts or `CANONICAL-CONVENTIONS.md`, do not copy the legacy convention forward.
 
@@ -70,20 +71,37 @@ Profiles:
 
 A multi-building cockpit selection creates multiple independent building manifests/runs. Do not combine them into a subportfolio recommendation inside this repository.
 
+## Runtime control is authoritative
+
+When working inside a prepared run under `data/runs/<building_id>/<analysis_id>/`:
+
+1. `run_state.json` is the authoritative current runtime state and conforms to `contracts/run-state.schema.json`.
+2. `next_stage_request.json` is the authoritative permission to execute exactly one specialist stage.
+3. Do not select another agent/stage because it appears logically useful.
+4. Do not execute the next handoff automatically after writing a stage artifact.
+5. Write the artifact only to the exact `output_path` declared by `next_stage_request.json`.
+6. Python must validate and advance the run using `python scripts/run_pipeline.py advance <run_dir>` before another stage is allowed.
+7. If Python returns `STAGE_VALIDATION_FAILED`, correct the current-stage artifact only. Never bypass the failed contract.
+8. If the run is `BLOCKED` or `CONFIGURATION_INVALID`, do not execute an LLM stage.
+9. If the run is `READY_TO_PUBLISH`, publish the SPA rather than inventing another agent stage.
+
+Use `/continue-pipeline-run run_dir=<run_dir>` for controlled live execution.
+
 ## Pipeline
 
 0. **Agent M / onboarding when required:** map real sources to canonical data with human-approved associations.
 1. **Deterministic Data Quality Gate:** verify source readiness, associations and applicability.
 2. **Site Context Builder:** create one canonical `site_context.json` for one physical `building_id`.
 3. **Analysis Manifest:** define requested depth, effort and enabled capabilities.
-4. **Agent A:** normalize deficiencies into opportunities.
-5. **Agent B:** cluster opportunities and form candidate work packages using SALVO-inspired bundling/blending logic.
-6. **Agent C + deterministic cost engine:** calculate/interpret approved cost indexation and indirect costs without changing scope.
-7. **Agent T:** formulate strategic recommendations from authorized evidence/rules.
-8. **Agent E:** produce an executive synthesis without creating/restructuring work packages.
-9. **SPA generator:** render structured outputs into a versioned building datasheet.
-10. **Human review:** capture reviewer decisions and metadata in the SPA.
-11. **Agent R / revision routing:** process structured reviewer feedback into controlled revisions and new SPA versions.
+4. **Python Orchestrator:** create/maintain the independent building run and expose only the valid next stage.
+5. **Agent A:** normalize deficiencies into opportunities.
+6. **Agent B:** cluster opportunities and form candidate work packages using SALVO-inspired bundling/blending logic.
+7. **Agent C + deterministic cost engine:** calculate/interpret approved cost indexation and indirect costs without changing scope.
+8. **Agent T:** formulate strategic recommendations from authorized evidence/rules.
+9. **Agent E:** produce an executive synthesis without creating/restructuring work packages.
+10. **SPA generator:** render validated structured outputs into a versioned building datasheet.
+11. **Human review:** capture reviewer decisions and metadata in the SPA.
+12. **Agent R / revision routing:** process structured reviewer feedback into controlled revisions and new SPA versions.
 
 ## Artifact discipline
 
@@ -100,4 +118,4 @@ Each stage must:
 
 ## Legacy warning
 
-`contracts/site-validation.schema.json` and some old generated V0.2 reference fixtures are retained for historical compatibility but are deprecated conventions. New work should use the Data Quality Gate in `site_context.json`, `analysis_manifest.json`, current stage contracts, and `pipeline-run.schema.json`.
+`contracts/site-validation.schema.json` and some old generated V0.2 reference fixtures are retained for historical compatibility but are deprecated conventions. New work should use the Data Quality Gate in `site_context.json`, `analysis_manifest.json`, `run_state.json`, current stage contracts, and the versioned SPA lifecycle.
