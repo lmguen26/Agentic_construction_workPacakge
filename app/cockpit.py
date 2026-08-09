@@ -5,6 +5,7 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import ttk, messagebox
 
+from app.selection_panel import HierarchicalSelectionPanel
 from src.capabilities.registry import CAPABILITIES, EFFORT_LEVELS
 from src.orchestration.analysis_manifest import build_manifest, load_profile
 from src.quality.data_quality_gate import evaluate_site
@@ -17,7 +18,7 @@ class SiteAnalysisCockpit(tk.Toplevel):
     def __init__(self, master: tk.Misc, portfolio: dict, buildings: list[dict]):
         super().__init__(master)
         self.title("Site Analysis Cockpit")
-        self.geometry("1040x820")
+        self.geometry("1120x900")
         self.portfolio = portfolio
         self.buildings = buildings
         self.profile_id = tk.StringVar(value="LEVEL_1_WORK_PACKAGES")
@@ -34,29 +35,12 @@ class SiteAnalysisCockpit(tk.Toplevel):
         ttk.Label(outer, text="Site Investment Analysis Cockpit", font=("TkDefaultFont", 16, "bold")).pack(anchor="w")
         ttk.Label(
             outer,
-            text="Select one or multiple buildings. Each selected building keeps its own validation, manifest, outputs, SPA and review history.",
+            text="Filter cumulatively by region, branch and site, then optionally refine the final building selection. Each building remains an independent analysis run.",
             foreground="#555555",
         ).pack(anchor="w", pady=(2, 8))
 
-        site_frame = ttk.LabelFrame(outer, text="Building scope", padding=8)
-        site_frame.pack(fill="x", pady=(4, 8))
-        self.building_list = tk.Listbox(site_frame, selectmode=tk.EXTENDED, height=7, exportselection=False)
-        self.building_list.pack(side="left", fill="both", expand=True)
-        scrollbar = ttk.Scrollbar(site_frame, orient="vertical", command=self.building_list.yview)
-        scrollbar.pack(side="right", fill="y")
-        self.building_list.configure(yscrollcommand=scrollbar.set)
-        for b in self.buildings:
-            self.building_list.insert("end", f"{b.get('building_id')} — {b.get('building_name', '')}")
-        if self.buildings:
-            self.building_list.selection_set(0)
-        self.building_list.bind("<<ListboxSelect>>", lambda _e: self._refresh_readiness())
-
-        select_row = ttk.Frame(outer)
-        select_row.pack(fill="x", pady=(0, 6))
-        ttk.Button(select_row, text="Select all", command=self._select_all).pack(side="left")
-        ttk.Button(select_row, text="Clear selection", command=self._clear_selection).pack(side="left", padx=(6, 0))
-        self.scope_label = ttk.Label(select_row, text="1 building selected")
-        self.scope_label.pack(side="right")
+        self.selector = HierarchicalSelectionPanel(outer, self.buildings, on_change=lambda _rows: self._refresh_readiness())
+        self.selector.pack(fill="x", pady=(4, 8))
 
         topgrid = ttk.Frame(outer)
         topgrid.pack(fill="x", pady=8)
@@ -78,12 +62,9 @@ class SiteAnalysisCockpit(tk.Toplevel):
 
         modules = ttk.LabelFrame(outer, text="Capabilities / optional modules", padding=10)
         modules.pack(fill="both", expand=True, pady=6)
-        self.module_widgets = {}
         for idx, (key, meta) in enumerate(CAPABILITIES.items()):
             row, col = divmod(idx, 2)
-            cb = ttk.Checkbutton(modules, text=meta["label"], variable=self.module_vars[key], command=self._module_changed)
-            cb.grid(row=row, column=col, sticky="w", padx=6, pady=3)
-            self.module_widgets[key] = cb
+            ttk.Checkbutton(modules, text=meta["label"], variable=self.module_vars[key], command=self._module_changed).grid(row=row, column=col, sticky="w", padx=6, pady=3)
 
         self.readiness = tk.Text(outer, height=10, wrap="word")
         self.readiness.pack(fill="x", pady=8)
@@ -92,23 +73,11 @@ class SiteAnalysisCockpit(tk.Toplevel):
         actions = ttk.Frame(outer)
         actions.pack(fill="x")
         ttk.Button(actions, text="Refresh readiness", command=self._refresh_readiness).pack(side="left")
-        ttk.Button(actions, text="Create analysis manifest(s)", command=self._create_manifests).pack(side="right")
+        ttk.Button(actions, text="Create analysis manifests", command=self._create_manifests).pack(side="right")
         self._refresh_readiness()
 
-    def _selected_building_ids(self) -> list[str]:
-        ids = []
-        for idx in self.building_list.curselection():
-            value = self.building_list.get(idx)
-            ids.append(value.split(" — ", 1)[0].strip())
-        return ids
-
-    def _select_all(self):
-        self.building_list.selection_set(0, "end")
-        self._refresh_readiness()
-
-    def _clear_selection(self):
-        self.building_list.selection_clear(0, "end")
-        self._refresh_readiness()
+    def _selected_buildings(self) -> list[dict]:
+        return self.selector.selected_buildings()
 
     def _apply_profile(self):
         pid = self.profile_id.get()
@@ -131,35 +100,32 @@ class SiteAnalysisCockpit(tk.Toplevel):
         self.readiness.configure(state="disabled")
 
     def _refresh_readiness(self):
-        bids = self._selected_building_ids()
-        self.scope_label.configure(text=f"{len(bids)} building{'s' if len(bids) != 1 else ''} selected")
-        if not bids:
-            self._set_readiness("No building selected.")
+        selected = self._selected_buildings() if hasattr(self, "selector") else []
+        if not selected:
+            if hasattr(self, "readiness"):
+                self._set_readiness("No buildings in scope.")
             return
-
-        lines = []
-        for bid in bids:
+        lines = [f"Scope: {len(selected)} building(s)"]
+        counts = {"VALIDATED": 0, "REVIEW_REQUIRED": 0, "BLOCKED": 0}
+        for b in selected:
+            bid = b["building_id"]
             result = evaluate_site(self.portfolio, bid)
-            result_map = {r["source"]: r for r in result.get("results", [])}
-            lines.append(f"{bid}: Data Quality Gate = {result.get('gate_status')}")
-            for key in ["deficiencies", "components", "accessibility", "leases", "asset_strategy", "strategic_context", "projects", "initiatives"]:
-                if key in result_map and result_map[key]["status"] in {"MISSING", "PARTIAL", "CONFLICT", "STALE"}:
-                    r = result_map[key]
-                    lines.append(f"  - {key}: {r['status']} ({r['severity']})")
+            gate = result.get("gate_status", "BLOCKED")
+            counts[gate] = counts.get(gate, 0) + 1
+            lines.append(f"{bid}: {gate} | region={b.get('region_id')} | branch={b.get('branch_id')} | site={b.get('site_id')}")
+        lines.insert(1, f"Validated={counts.get('VALIDATED',0)} · Review required={counts.get('REVIEW_REQUIRED',0)} · Blocked={counts.get('BLOCKED',0)}")
         self._set_readiness("\n".join(lines))
 
     def _create_manifests(self):
-        bids = self._selected_building_ids()
-        if not bids:
-            messagebox.showwarning("No selection", "Select at least one building.")
+        selected = self._selected_buildings()
+        if not selected:
+            messagebox.showwarning("No scope", "Select at least one building or higher-level scope.")
             return
-
         modules = {k: v.get() for k, v in self.module_vars.items()}
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        created = []
-        blocked = []
-
-        for bid in bids:
+        created, blocked = [], []
+        for b in selected:
+            bid = b["building_id"]
             quality = evaluate_site(self.portfolio, bid)
             if quality.get("gate_status") == "BLOCKED":
                 blocked.append(bid)
@@ -171,26 +137,30 @@ class SiteAnalysisCockpit(tk.Toplevel):
                 requested_by=self.requested_by.get().strip() or None,
                 module_overrides=modules,
             )
+            manifest["selection_scope"] = {
+                "region_id": b.get("region_id"),
+                "branch_id": b.get("branch_id"),
+                "site_id": b.get("site_id"),
+            }
             path = OUTPUT_DIR / f"{bid}.analysis_manifest.json"
             path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
             created.append(str(path))
 
+        scope = self.selector.current_scope()
         batch_index = {
-            "selected_building_ids": bids,
+            "selected_building_ids": [b["building_id"] for b in selected],
+            "scope_filters": {
+                "regions": list(scope.region_ids),
+                "branches": list(scope.branch_ids),
+                "sites": list(scope.site_ids),
+            },
             "profile_id": self.profile_id.get(),
             "effort": self.effort.get(),
-            "requested_by": self.requested_by.get().strip() or None,
             "created_manifests": created,
-            "blocked_building_ids": blocked,
+            "blocked_buildings": blocked,
         }
-        batch_path = OUTPUT_DIR / "latest_batch_selection.json"
-        batch_path.write_text(json.dumps(batch_index, indent=2, ensure_ascii=False), encoding="utf-8")
-
-        message = f"Created {len(created)} per-building manifest(s)."
-        if blocked:
-            message += f"\nBlocked and skipped: {', '.join(blocked)}"
-        message += f"\nBatch index: {batch_path}"
-        messagebox.showinfo("Analysis manifests", message)
+        (OUTPUT_DIR / "latest_batch_selection.json").write_text(json.dumps(batch_index, indent=2), encoding="utf-8")
+        messagebox.showinfo("Analysis manifests", f"Created {len(created)} manifest(s).\nBlocked: {len(blocked)}")
 
 
 def open_cockpit(master: tk.Misc, portfolio: dict, buildings: list[dict]):
